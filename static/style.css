@@ -9634,3 +9634,36 @@ main {
     }
 }
 
+/* Logout Card Styles */
+.logout-card {
+    margin-top: 1.5rem;
+    border: 2px solid rgba(220, 38, 38, 0.1);
+}
+
+.logout-card:hover {
+    border-color: rgba(220, 38, 38, 0.2);
+}
+
+.logout-section {
+    text-align: center;
+    padding: 0.5rem 0;
+}
+
+.logout-section p {
+    margin-bottom: 1.5rem;
+}
+
+.worker-navbar .nav-link[style*="color: #dc2626"] {
+    color: #dc2626 !important;
+    background: rgba(220, 38, 38, 0.08);
+    border-color: rgba(220, 38, 38, 0.2);
+}
+
+.worker-navbar .nav-link[style*="color: #dc2626"]:hover {
+    background: rgba(220, 38, 38, 0.15);
+    border-color: rgba(220, 38, 38, 0.3);
+    color: #b91c1c !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+}
+
