@@ -23,6 +23,10 @@
                    <a href="{{ url_for('contact') }}" class="nav-link">
                        <span>Support</span>
                    </a>
+                   <a href="{{ url_for('worker_logout') }}" class="nav-link" onclick="return confirm('Are you sure you want to log out?');" style="color: #dc2626;">
+                       <span class="material-symbols-outlined" style="font-size: 1.1rem;">logout</span>
+                       <span>Log Out</span>
+                   </a>
                </div>
         {% if session.get('worker_id') %}
         <div class="user-profile-menu">
@@ -495,6 +499,25 @@
                                 <span class="info-label">Joined</span>
                                 <span class="info-value">{{ employee.created_at }}</span>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logout Card -->
+                <div class="worker-card logout-card modern-card">
+                    <div class="card-header modern-card-header">
+                        <div class="card-header-icon" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);">
+                            <span class="material-symbols-outlined">logout</span>
+                        </div>
+                        <h2>Account Actions</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="logout-section">
+                            <p style="color: #64748b; margin-bottom: 1.5rem; font-size: 0.9rem;">Sign out of your employee account. You'll need to log in again to access your dashboard.</p>
+                            <a href="{{ url_for('worker_logout') }}" class="btn btn-danger btn-large" onclick="return confirm('Are you sure you want to log out?');" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                                <span class="material-symbols-outlined">logout</span>
+                                <span>Log Out</span>
+                            </a>
                         </div>
                     </div>
                 </div>
