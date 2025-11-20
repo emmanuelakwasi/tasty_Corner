@@ -153,12 +153,21 @@
                     <div class="payment-icon">🔒</div>
                     <div class="payment-text">
                         <strong>Secure Checkout</strong>
-                        <p>Stripe integration coming soon. Your order will be saved securely.</p>
+                        <p>Powered by Stripe. Your payment information is secure.</p>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary btn-block btn-large checkout-button">
+                
+                <!-- Stripe Elements will be inserted here -->
+                <div id="card-element" style="margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #fff;">
+                    <!-- Stripe Elements will create form elements here -->
+                </div>
+                
+                <!-- Display form errors -->
+                <div id="card-errors" role="alert" style="color: #dc2626; margin-bottom: 15px; display: none;"></div>
+                
+                <button type="submit" id="submit-button" class="btn btn-primary btn-block btn-large checkout-button" disabled>
                     <span class="button-icon">✨</span>
-                    <span>Place Order Now</span>
+                    <span id="button-text">Place Order & Pay</span>
                     <span class="button-arrow">→</span>
                 </button>
                 <p class="secure-note">🔐 Your information is safe and secure</p>
@@ -166,6 +175,9 @@
         </form>
     </div>
 </div>
+
+<!-- Stripe.js library -->
+<script src="https://js.stripe.com/v3/"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -225,6 +237,122 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize total on page load
     updateTotal();
+    
+    // Stripe Integration
+    const stripe = Stripe('{{ stripe_publishable_key }}');
+    let elements;
+    let cardElement;
+    let paymentIntentClientSecret;
+    
+    // Initialize Stripe Elements
+    function initializeStripe() {
+        elements = stripe.elements();
+        
+        const style = {
+            base: {
+                color: '#32325d',
+                fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                fontSmoothing: 'antialiased',
+                fontSize: '16px',
+                '::placeholder': {
+                    color: '#aab7c4'
+                }
+            },
+            invalid: {
+                color: '#fa755a',
+                iconColor: '#fa755a'
+            }
+        };
+        
+        cardElement = elements.create('card', { style: style });
+        cardElement.mount('#card-element');
+        
+        // Handle real-time validation errors from the card Element
+        cardElement.on('change', function(event) {
+            const displayError = document.getElementById('card-errors');
+            if (event.error) {
+                displayError.textContent = event.error.message;
+                displayError.style.display = 'block';
+                document.getElementById('submit-button').disabled = true;
+            } else {
+                displayError.textContent = '';
+                displayError.style.display = 'none';
+                document.getElementById('submit-button').disabled = false;
+            }
+        });
+    }
+    
+    // Create payment intent when form is submitted
+    const checkoutForm = document.querySelector('.checkout-form');
+    checkoutForm.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        
+        const submitButton = document.getElementById('submit-button');
+        const buttonText = document.getElementById('button-text');
+        
+        // Disable button
+        submitButton.disabled = true;
+        buttonText.textContent = 'Processing...';
+        
+        try {
+            // Get form data
+            const tipPercentage = document.querySelector('input[name="tip_percentage"]:checked').value;
+            const customTip = document.querySelector('input[name="custom_tip"]').value || '0';
+            const couponCode = document.querySelector('input[name="coupon_code"]').value || '';
+            
+            // Create payment intent
+            const response = await fetch('/create-payment-intent', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    tip_percentage: tipPercentage,
+                    custom_tip: customTip,
+                    coupon_code: couponCode
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            paymentIntentClientSecret = data.clientSecret;
+            
+            // Confirm payment with Stripe
+            const { error, paymentIntent } = await stripe.confirmCardPayment(
+                paymentIntentClientSecret,
+                {
+                    payment_method: {
+                        card: cardElement,
+                    }
+                }
+            );
+            
+            if (error) {
+                // Show error to customer
+                const displayError = document.getElementById('card-errors');
+                displayError.textContent = error.message;
+                displayError.style.display = 'block';
+                submitButton.disabled = false;
+                buttonText.textContent = 'Place Order & Pay';
+            } else if (paymentIntent.status === 'succeeded') {
+                // Payment succeeded, redirect to success page
+                window.location.href = `/payment-success?payment_intent=${paymentIntent.id}`;
+            }
+        } catch (error) {
+            const displayError = document.getElementById('card-errors');
+            displayError.textContent = error.message || 'An error occurred. Please try again.';
+            displayError.style.display = 'block';
+            submitButton.disabled = false;
+            buttonText.textContent = 'Place Order & Pay';
+        }
+    });
+    
+    // Initialize Stripe when page loads
+    initializeStripe();
 });
 </script>
 </div>

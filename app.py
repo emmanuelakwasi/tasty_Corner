@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, Response
+from flask import Flask, render_template, request, redirect, url_for, session, flash, Response, jsonify
 import csv
 import os
 import json
@@ -14,9 +14,14 @@ from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
+import stripe
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-change-this-in-production')  # Use environment variable in production
+
+# Stripe Configuration
+stripe.api_key = os.environ.get('STRIPE_SECRET_KEY', 'sk_test_your_stripe_secret_key_here')
+STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', 'pk_test_your_stripe_publishable_key_here')
 
 @app.template_filter('format_hours')
 def format_hours(hours):
@@ -1602,66 +1607,9 @@ def checkout():
         return redirect(url_for('menu'))
     
     if request.method == 'POST':
-        # Process order
-        tip_percentage = request.form.get('tip_percentage')
-        custom_tip = request.form.get('custom_tip')
-        coupon_code = request.form.get('coupon_code', '').strip().upper()
-        
-        subtotal = sum(item['price'] * item['quantity'] for item in cart)
-        
-        # Apply coupon if provided
-        discount = 0.0
-        applied_coupon = ''
-        if coupon_code:
-            discount, error_msg = validate_coupon(coupon_code, subtotal)
-            if error_msg:
-                flash(f'Coupon error: {error_msg}', 'error')
-                return redirect(url_for('checkout'))
-            applied_coupon = coupon_code
-            apply_coupon(coupon_code)
-        
-        # Apply discount to subtotal
-        subtotal_after_discount = max(0, subtotal - discount)
-        
-        tax = subtotal_after_discount * TAX_RATE
-        delivery_fee = DELIVERY_FEE
-        
-        # Calculate tip (on original subtotal before discount)
-        tip = 0
-        if tip_percentage == 'custom' and custom_tip:
-            tip = float(custom_tip)
-        elif tip_percentage and tip_percentage != 'no_tip':
-            tip_percent = float(tip_percentage.replace('%', '')) / 100
-            tip = subtotal * tip_percent
-        
-        total = subtotal_after_discount + tax + delivery_fee + tip
-        
-        # Collect allergies from all items
-        allergies = []
-        for item in cart:
-            if item.get('allergies'):
-                allergies.append(f"{item['name']}: {item['allergies']}")
-        
-        # Save order
-        order_id = save_order(
-            session['user_id'],
-            cart,
-            allergies,
-            round(subtotal, 2),
-            round(tax, 2),
-            delivery_fee,
-            round(tip, 2),
-            round(total, 2),
-            applied_coupon,
-            round(discount, 2)
-        )
-        
-        session['cart'] = []
-        session.modified = True
-        session['has_new_order'] = True
-        
-        flash(f'Order #{order_id} placed successfully! Total: ${total:.2f}', 'success')
-        return redirect(url_for('order_confirmation', order_id=order_id))
+        # This is now handled by Stripe payment flow
+        # Payment will be processed via Stripe, then order saved in success route
+        pass
     
     subtotal = sum(item['price'] * item['quantity'] for item in cart)
     
@@ -1686,7 +1634,160 @@ def checkout():
                          delivery_fee=delivery_fee,
                          discount=round(discount, 2),
                          applied_coupon=applied_coupon,
-                         user_name=session.get('user_name'))
+                         user_name=session.get('user_name'),
+                         stripe_publishable_key=STRIPE_PUBLISHABLE_KEY)
+
+@app.route('/create-payment-intent', methods=['POST'])
+def create_payment_intent():
+    """Create Stripe Payment Intent"""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    try:
+        data = request.get_json()
+        tip_percentage = data.get('tip_percentage', '2%')
+        custom_tip = data.get('custom_tip', '0')
+        coupon_code = data.get('coupon_code', '').strip().upper()
+        
+        cart = session.get('cart', [])
+        if not cart:
+            return jsonify({'error': 'Cart is empty'}), 400
+        
+        # Calculate totals
+        subtotal = sum(item['price'] * item['quantity'] for item in cart)
+        
+        # Apply coupon if provided
+        discount = 0.0
+        applied_coupon = ''
+        if coupon_code:
+            discount, error_msg = validate_coupon(coupon_code, subtotal)
+            if error_msg:
+                return jsonify({'error': f'Coupon error: {error_msg}'}), 400
+            applied_coupon = coupon_code
+        
+        # Apply discount to subtotal
+        subtotal_after_discount = max(0, subtotal - discount)
+        tax = subtotal_after_discount * TAX_RATE
+        delivery_fee = DELIVERY_FEE
+        
+        # Calculate tip
+        tip = 0
+        if tip_percentage == 'custom' and custom_tip:
+            tip = float(custom_tip)
+        elif tip_percentage and tip_percentage != 'no_tip':
+            tip_percent = float(tip_percentage.replace('%', '')) / 100
+            tip = subtotal * tip_percent
+        
+        total = subtotal_after_discount + tax + delivery_fee + tip
+        
+        # Store order details in session for later
+        session['pending_order'] = {
+            'subtotal': round(subtotal, 2),
+            'tax': round(tax, 2),
+            'delivery_fee': delivery_fee,
+            'tip': round(tip, 2),
+            'total': round(total, 2),
+            'coupon_code': applied_coupon,
+            'discount': round(discount, 2),
+            'tip_percentage': tip_percentage
+        }
+        session.modified = True
+        
+        # Create Stripe Payment Intent
+        # Convert to cents for Stripe
+        amount_cents = int(total * 100)
+        
+        payment_intent = stripe.PaymentIntent.create(
+            amount=amount_cents,
+            currency='usd',
+            metadata={
+                'user_id': str(session['user_id']),
+                'order_type': 'restaurant_order'
+            }
+        )
+        
+        return jsonify({
+            'clientSecret': payment_intent.client_secret,
+            'amount': total
+        })
+    
+    except stripe.error.StripeError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/payment-success', methods=['GET', 'POST'])
+def payment_success():
+    """Handle successful payment"""
+    if 'user_id' not in session:
+        flash('Please sign in', 'error')
+        return redirect(url_for('signin'))
+    
+    payment_intent_id = request.args.get('payment_intent')
+    if not payment_intent_id:
+        flash('Payment information missing', 'error')
+        return redirect(url_for('menu'))
+    
+    try:
+        # Verify payment with Stripe
+        payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+        
+        if payment_intent.status != 'succeeded':
+            flash('Payment was not successful', 'error')
+            return redirect(url_for('checkout'))
+        
+        # Get pending order from session
+        pending_order = session.get('pending_order')
+        if not pending_order:
+            flash('Order information not found', 'error')
+            return redirect(url_for('menu'))
+        
+        cart = session.get('cart', [])
+        if not cart:
+            flash('Cart is empty', 'error')
+            return redirect(url_for('menu'))
+        
+        # Collect allergies
+        allergies = []
+        for item in cart:
+            if item.get('allergies'):
+                allergies.append(f"{item['name']}: {item['allergies']}")
+        
+        # Save order
+        order_id = save_order(
+            session['user_id'],
+            cart,
+            allergies,
+            pending_order['subtotal'],
+            pending_order['tax'],
+            pending_order['delivery_fee'],
+            pending_order['tip'],
+            pending_order['total'],
+            pending_order['coupon_code'],
+            pending_order['discount']
+        )
+        
+        # Clear cart and pending order
+        session['cart'] = []
+        session.pop('pending_order', None)
+        session.modified = True
+        session['has_new_order'] = True
+        
+        flash(f'Payment successful! Order #{order_id} placed. Total: ${pending_order["total"]:.2f}', 'success')
+        return redirect(url_for('order_confirmation', order_id=order_id))
+    
+    except stripe.error.StripeError as e:
+        flash(f'Payment verification error: {str(e)}', 'error')
+        return redirect(url_for('checkout'))
+    except Exception as e:
+        flash(f'Error processing order: {str(e)}', 'error')
+        return redirect(url_for('checkout'))
+
+@app.route('/payment-cancel')
+def payment_cancel():
+    """Handle cancelled payment"""
+    flash('Payment was cancelled. You can try again.', 'info')
+    return redirect(url_for('checkout'))
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
