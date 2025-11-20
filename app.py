@@ -16,7 +16,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 
 app = Flask(__name__)
-app.secret_key = 'your-secret-key-change-this-in-production'  # Change this in production!
+app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-change-this-in-production')  # Use environment variable in production
 
 @app.template_filter('format_hours')
 def format_hours(hours):
@@ -2823,5 +2823,6 @@ def admin_add_category():
     return redirect(request.referrer or url_for('admin'))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=True, host='0.0.0.0', port=port)
 
