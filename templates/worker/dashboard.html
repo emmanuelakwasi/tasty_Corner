@@ -16,195 +16,161 @@
                 </span>
             </a>
         </div>
-               <div class="nav-links">
-                   <a href="{{ url_for('worker_dashboard') }}" class="nav-link">
-                       <span>Dashboard</span>
-                   </a>
-                   <a href="{{ url_for('contact') }}" class="nav-link">
-                       <span>Support</span>
-                   </a>
-                   <a href="{{ url_for('worker_logout') }}" class="nav-link" onclick="return confirm('Are you sure you want to log out?');" style="color: #dc2626;">
-                       <span class="material-symbols-outlined" style="font-size: 1.1rem;">logout</span>
-                       <span>Log Out</span>
-                   </a>
-               </div>
-        {% if session.get('worker_id') %}
-        <div class="user-profile-menu">
-            <button type="button" class="user-profile-trigger" id="userProfileTrigger" aria-haspopup="true" aria-expanded="false">
-                <div class="profile-avatar">
-                    {{ employee.first_name[0].upper() if employee.first_name else 'E' }}
-                </div>
-                <span class="profile-name">{{ employee.first_name }} {{ employee.last_name }}</span>
-                <span class="profile-caret">▼</span>
-            </button>
-            <div class="user-profile-dropdown" id="userProfileDropdown" aria-hidden="true">
-                <div class="profile-dropdown-header">
-                    <div class="profile-dropdown-avatar">
-                        {{ employee.first_name[0].upper() if employee.first_name else 'E' }}
-                    </div>
-                    <div class="profile-dropdown-info">
-                        <div class="profile-dropdown-name">{{ employee.first_name }} {{ employee.last_name }}</div>
-                        <div class="profile-dropdown-email">{{ employee.email }}</div>
-                        <div class="profile-dropdown-role">
-                            <span class="role-badge">{{ employee.job_title or 'Employee' }}</span>
-                            <span class="id-badge">ID: {{ employee.employee_id }}</span>
-                        </div>
-                    </div>
-                </div>
-                       <div class="profile-dropdown-divider"></div>
-                       <a href="{{ url_for('worker_dashboard') }}" class="profile-dropdown-item">
-                           <span>Dashboard</span>
-                           <span class="profile-item-arrow">→</span>
-                       </a>
-                       <a href="#profile" class="profile-dropdown-item" onclick="scrollToProfile(); return false;">
-                           <span>View Profile</span>
-                           <span class="profile-item-arrow">→</span>
-                       </a>
-                       <a href="#schedule" class="profile-dropdown-item" onclick="scrollToSchedule(); return false;">
-                           <span>My Schedule</span>
-                           <span class="profile-item-arrow">→</span>
-                       </a>
-                       <div class="profile-dropdown-divider"></div>
-                       <a href="{{ url_for('contact') }}" class="profile-dropdown-item">
-                           <span>Contact Support</span>
-                           <span class="profile-item-arrow">→</span>
-                       </a>
-                       <a href="mailto:{{ employee.email }}" class="profile-dropdown-item">
-                           <span>Send Email</span>
-                           <span class="profile-item-arrow">→</span>
-                       </a>
-                       <div class="profile-dropdown-divider"></div>
-                       <a href="{{ url_for('worker_logout') }}" class="profile-dropdown-item profile-dropdown-signout" onclick="return confirm('Are you sure you want to log out?');">
-                           <span>Log Out</span>
-                           <span class="profile-item-arrow">→</span>
-                       </a>
-            </div>
+        <div class="nav-links">
+            <a href="{{ url_for('worker_logout') }}" class="nav-link" onclick="return confirm('Are you sure you want to log out?');" style="color: #dc2626;">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">logout</span>
+                <span>Log Out</span>
+            </a>
         </div>
-        {% endif %}
     </div>
 </nav>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="worker-dashboard">
-        <div class="worker-header">
-            <div class="worker-header-background"></div>
-            <div class="worker-header-pattern"></div>
-            <div class="worker-header-content">
-                <div class="worker-greeting">
-                    <div class="greeting-icon">
-                        <span class="material-symbols-outlined">waving_hand</span>
-                    </div>
-                    <div class="greeting-text">
-                        <h1>Welcome back, <span class="highlight-name">{{ employee.first_name }}</span>!</h1>
-                        <p class="worker-subtitle">Here's your dashboard overview</p>
-                    </div>
-                </div>
-                <div class="worker-stats">
-                    <div class="stat-item">
-                        <div class="stat-icon">
-                            <span class="material-symbols-outlined">work</span>
-                        </div>
-                        <div class="stat-info">
-                            <div class="stat-value">{{ employee.job_title or 'Employee' }}</div>
-                            <div class="stat-label">Position</div>
-                        </div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-icon">
-                            <span class="material-symbols-outlined">badge</span>
-                        </div>
-                        <div class="stat-info">
-                            <div class="stat-value">{{ employee.employee_id }}</div>
-                            <div class="stat-label">Employee ID</div>
-                        </div>
-                    </div>
-                </div>
+<div class="worker-layout">
+    <aside class="worker-sidebar">
+        <div class="worker-sidebar-header">
+            <img src="{{ url_for('static', filename='images/fav.png') }}" alt="TastyCorner Logo" class="worker-sidebar-logo">
+            <div>
+                <h2>Employee Portal</h2>
+                <p>{{ employee.first_name }} {{ employee.last_name }}</p>
             </div>
         </div>
+        <nav class="worker-side-nav">
+            <button class="worker-nav-item active" data-section="dashboard">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span>Dashboard</span>
+            </button>
+            <button class="worker-nav-item" data-section="attendance">
+                <span class="material-symbols-outlined">schedule</span>
+                <span>Attendance</span>
+            </button>
+            <button class="worker-nav-item" data-section="schedule">
+                <span class="material-symbols-outlined">calendar_today</span>
+                <span>Schedule</span>
+            </button>
+            <button class="worker-nav-item" data-section="payroll">
+                <span class="material-symbols-outlined">payments</span>
+                <span>Payroll</span>
+            </button>
+            <button class="worker-nav-item" data-section="profile">
+                <span class="material-symbols-outlined">person</span>
+                <span>Profile</span>
+            </button>
+        </nav>
+        <div class="worker-sidebar-footer">
+            <div class="worker-credentials">
+                <span class="worker-label">Employee ID</span>
+                <strong>{{ employee.employee_id }}</strong>
+            </div>
+            <a href="{{ url_for('worker_logout') }}" class="btn btn-secondary btn-sm">Sign Out</a>
+        </div>
+    </aside>
 
-        <div class="worker-content">
-            <!-- Tab Navigation -->
-            <div class="worker-tabs">
-                <button class="worker-tab active" data-tab="attendance">
-                    <span class="material-symbols-outlined">schedule</span>
-                    <span>Attendance</span>
-                </button>
-                <button class="worker-tab" data-tab="payroll">
-                    <span class="material-symbols-outlined">payments</span>
-                    <span>Payroll</span>
-                </button>
-                <button class="worker-tab" data-tab="schedule">
-                    <span class="material-symbols-outlined">calendar_today</span>
-                    <span>Schedule</span>
-                </button>
-                <button class="worker-tab" data-tab="profile">
-                    <span class="material-symbols-outlined">person</span>
-                    <span>Profile</span>
-                </button>
-                {% if employee.notes %}
-                <button class="worker-tab" data-tab="notes">
-                    <span class="material-symbols-outlined">note</span>
-                    <span>Notes</span>
-                </button>
-                {% endif %}
+    <div class="worker-content" data-initial-section="dashboard">
+        <header class="worker-page-header">
+            <div>
+                <h1>Welcome back, {{ employee.first_name }}!</h1>
+                <p class="worker-page-subtitle">Here's your dashboard overview</p>
+            </div>
+        </header>
+
+        <!-- Dashboard Section -->
+        <section class="worker-section active" data-section="dashboard">
+            <!-- Quick Stats -->
+            <div class="worker-stats-grid">
+                <div class="worker-stat-card">
+                    <div class="stat-card-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                        <span class="material-symbols-outlined">work</span>
+                    </div>
+                    <div class="stat-card-content">
+                        <div class="stat-card-value">{{ employee.job_title or 'Employee' }}</div>
+                        <div class="stat-card-label">Position</div>
+                    </div>
+                </div>
+                <div class="worker-stat-card">
+                    <div class="stat-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <span class="material-symbols-outlined">access_time</span>
+                    </div>
+                    <div class="stat-card-content">
+                        <div class="stat-card-value">{{ hours_today|format_hours }}</div>
+                        <div class="stat-card-label">Hours Today</div>
+                    </div>
+                </div>
+                <div class="worker-stat-card">
+                    <div class="stat-card-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                        <span class="material-symbols-outlined">schedule</span>
+                    </div>
+                    <div class="stat-card-content">
+                        <div class="stat-card-value">{{ hours_week|format_hours }}</div>
+                        <div class="stat-card-label">Hours This Week</div>
+                    </div>
+                </div>
+                <div class="worker-stat-card">
+                    <div class="stat-card-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                        <span class="material-symbols-outlined">payments</span>
+                    </div>
+                    <div class="stat-card-content">
+                        <div class="stat-card-value">${{ "%.2f"|format((payroll_info.hours_this_period or 0) * hourly_rate) }}</div>
+                        <div class="stat-card-label">Current Earnings</div>
+                    </div>
+                </div>
             </div>
 
-            <div class="worker-main">
-                <!-- Attendance Tab -->
-                <div class="worker-tab-content active" data-content="attendance">
-                <!-- Time Tracking Card -->
-                <div class="worker-card time-tracking-card modern-card">
-                    <div class="card-header modern-card-header">
-                        <div class="card-header-icon">
-                            <span class="material-symbols-outlined">access_time</span>
-                        </div>
-                        <h2>Time Tracking</h2>
+            <!-- Time Tracking Card -->
+            <div class="worker-card">
+                <div class="card-header modern-card-header">
+                    <div class="card-header-icon">
+                        <span class="material-symbols-outlined">access_time</span>
                     </div>
-                    <div class="card-body">
-                        <div class="time-tracking-grid">
-                            <div class="time-track-item">
-                                <div class="time-track-label">Live Time Clock</div>
-                                <div class="live-clock" id="liveClock">--:--:--</div>
-                            </div>
-                            <div class="time-track-item">
-                                <div class="time-track-label">Hours Worked Today</div>
-                                <div class="time-track-value" id="hoursToday">{{ hours_today|format_hours }}</div>
-                                <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 0.25rem;" id="hoursTodayDecimal">({{ "%.2f"|format(hours_today) }}h)</div>
-                            </div>
-                            <div class="time-track-item">
-                                <div class="time-track-label">Hours Worked This Week</div>
-                                <div class="time-track-value" id="hoursWeek">{{ hours_week|format_hours }}</div>
-                                <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 0.25rem;" id="hoursWeekDecimal">({{ "%.2f"|format(hours_week) }}h)</div>
-                            </div>
-                            <div class="time-track-item overtime-item {% if overtime_status.is_overtime_today or overtime_status.is_overtime_week %}overtime-active{% endif %}">
-                                <div class="time-track-label">Overtime Status</div>
-                                <div class="time-track-value overtime-value">
-                                    {% if overtime_status.is_overtime_today %}
-                                        <span class="overtime-badge">Today: +{{ "%.2f"|format(overtime_status.overtime_today) }}h</span>
-                                    {% endif %}
-                                    {% if overtime_status.is_overtime_week %}
-                                        <span class="overtime-badge">Week: +{{ "%.2f"|format(overtime_status.overtime_week) }}h</span>
-                                    {% endif %}
-                                    {% if not overtime_status.is_overtime_today and not overtime_status.is_overtime_week %}
-                                        <span class="no-overtime">No Overtime</span>
-                                    {% endif %}
-                                </div>
+                    <h2>Time Tracking</h2>
+                </div>
+                <div class="card-body">
+                    <div class="time-tracking-grid">
+                        <div class="time-track-item">
+                            <div class="time-track-label">Live Time Clock</div>
+                            <div class="live-clock" id="liveClock">--:--:--</div>
+                        </div>
+                        <div class="time-track-item">
+                            <div class="time-track-label">Hours Worked Today</div>
+                            <div class="time-track-value" id="hoursToday">{{ hours_today|format_hours }}</div>
+                            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 0.25rem;" id="hoursTodayDecimal">({{ "%.2f"|format(hours_today) }}h)</div>
+                        </div>
+                        <div class="time-track-item">
+                            <div class="time-track-label">Hours Worked This Week</div>
+                            <div class="time-track-value" id="hoursWeek">{{ hours_week|format_hours }}</div>
+                            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 0.25rem;" id="hoursWeekDecimal">({{ "%.2f"|format(hours_week) }}h)</div>
+                        </div>
+                        <div class="time-track-item overtime-item {% if overtime_status.is_overtime_today or overtime_status.is_overtime_week %}overtime-active{% endif %}">
+                            <div class="time-track-label">Overtime Status</div>
+                            <div class="time-track-value overtime-value">
+                                {% if overtime_status.is_overtime_today %}
+                                    <span class="overtime-badge">Today: +{{ "%.2f"|format(overtime_status.overtime_today) }}h</span>
+                                {% endif %}
+                                {% if overtime_status.is_overtime_week %}
+                                    <span class="overtime-badge">Week: +{{ "%.2f"|format(overtime_status.overtime_week) }}h</span>
+                                {% endif %}
+                                {% if not overtime_status.is_overtime_today and not overtime_status.is_overtime_week %}
+                                    <span class="no-overtime">No Overtime</span>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </section>
 
-                {% if has_schedule_today %}
-                <div class="worker-card attendance-card modern-card">
-                    <div class="card-header modern-card-header">
-                        <div class="card-header-icon">
-                            <span class="material-symbols-outlined">schedule</span>
-                        </div>
-                        <h2>Attendance</h2>
+        <!-- Attendance Section -->
+        <section class="worker-section hidden" data-section="attendance">
+            <div class="worker-card">
+                <div class="card-header modern-card-header">
+                    <div class="card-header-icon">
+                        <span class="material-symbols-outlined">schedule</span>
                     </div>
-                    <div class="card-body">
+                    <h2>Attendance</h2>
+                </div>
+                <div class="card-body">
+                    {% if has_schedule_today %}
                         {% if attendance %}
                             <div class="attendance-status">
                                 {% if attendance.check_in_time %}
@@ -227,7 +193,7 @@
                             <div class="attendance-actions">
                                 {% if not attendance.check_in_time %}
                                     <form method="POST" action="{{ url_for('worker_checkin') }}" style="display: inline;">
-                                        <button type="submit" class="btn btn-primary btn-checkin">
+                                        <button type="submit" class="btn btn-primary btn-checkin" id="checkinBtn">
                                             <span class="material-symbols-outlined">login</span>
                                             Check In
                                         </button>
@@ -252,27 +218,17 @@
                             </div>
                             <div class="attendance-actions">
                                 <form method="POST" action="{{ url_for('worker_checkin') }}" style="display: inline;">
-                                    <button type="submit" class="btn btn-primary btn-checkin">
+                                    <button type="submit" class="btn btn-primary btn-checkin" id="checkinBtn">
                                         <span class="material-symbols-outlined">login</span>
                                         Check In
                                     </button>
                                 </form>
                             </div>
                         {% endif %}
-                    </div>
-                </div>
-                {% else %}
-                <div class="worker-card attendance-card modern-card">
-                    <div class="card-header modern-card-header">
-                        <div class="card-header-icon">
-                            <span class="material-symbols-outlined">event_busy</span>
-                        </div>
-                        <h2>No Schedule Today</h2>
-                    </div>
-                    <div class="card-body">
+                    {% else %}
                         <div class="no-schedule-message">
                             <div class="no-schedule-icon">
-                                <span class="material-symbols-outlined">calendar_today</span>
+                                <span class="material-symbols-outlined">event_busy</span>
                             </div>
                             <h3>No Work Schedule</h3>
                             <p>You don't have a scheduled shift for today. Check-in is only available when you have an assigned schedule.</p>
@@ -280,85 +236,33 @@
                                 <p><strong>Need to work today?</strong> Please contact your administrator to request a schedule assignment.</p>
                             </div>
                         </div>
-                    </div>
+                    {% endif %}
                 </div>
-                {% endif %}
-                </div>
+            </div>
+        </section>
 
-                <!-- Payroll Tab -->
-                <div class="worker-tab-content" data-content="payroll">
-                <div class="worker-card payroll-card modern-card">
-                    <div class="card-header modern-card-header">
-                        <div class="card-header-icon">
-                            <span class="material-symbols-outlined">payments</span>
-                        </div>
-                        <h2>Payroll Information</h2>
+        <!-- Schedule Section with Calendar -->
+        <section class="worker-section hidden" data-section="schedule">
+            <div class="worker-card">
+                <div class="card-header modern-card-header">
+                    <div class="card-header-icon">
+                        <span class="material-symbols-outlined">calendar_today</span>
                     </div>
-                    <div class="card-body">
-                        <div class="payroll-info">
-                            <div class="payroll-item">
-                                <span class="payroll-label">Your Hourly Rate:</span>
-                                <span class="payroll-value rate-value" style="font-weight: 700; color: #3b82f6;">${{ "%.2f"|format(hourly_rate) }}/hour</span>
-                                {% if employee.hourly_rate %}
-                                    <div style="font-size: 0.75rem; color: #10b981; margin-top: 0.25rem;">Individual Rate</div>
-                                {% elif employee.job_title %}
-                                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">Based on your role: {{ employee.job_title }}</div>
-                                {% else %}
-                                    <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">Default Rate</div>
-                                {% endif %}
-                            </div>
-                            <div class="payroll-item">
-                                <span class="payroll-label">Hours This Period:</span>
-                                <span class="payroll-value hours-value" style="font-weight: 700; color: #1e293b;">{{ (payroll_info.hours_this_period or 0)|format_hours }}</span>
-                                <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">
-                                    ({{ "%.2f"|format(payroll_info.hours_this_period or 0) }} hours)
-                                </div>
-                            </div>
-                            <div class="payroll-item earnings-item" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(37, 99, 235, 0.12) 100%); border-radius: 12px; padding: 1.25rem; border: 2px solid rgba(59, 130, 246, 0.2);">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                                    <span class="payroll-label" style="font-weight: 700; color: #1e293b;">Current Earnings:</span>
-                                    <span class="payroll-value earnings-value" style="font-size: 1.5rem; font-weight: 800; color: #10b981;">${{ "%.2f"|format((payroll_info.hours_this_period or 0) * hourly_rate) }}</span>
-                                </div>
-                                <div style="font-size: 0.85rem; color: #475569; line-height: 1.6; padding: 0.75rem; background: rgba(255, 255, 255, 0.6); border-radius: 8px; border-left: 3px solid #3b82f6;">
-                                    <div style="margin-bottom: 0.5rem;">
-                                        <strong style="color: #1e40af;">Calculation:</strong>
-                                    </div>
-                                    <div style="font-family: 'Courier New', monospace; color: #1e293b;">
-                                        {{ "%.2f"|format(payroll_info.hours_this_period or 0) }} hours × ${{ "%.2f"|format(hourly_rate) }}/hour = ${{ "%.2f"|format((payroll_info.hours_this_period or 0) * hourly_rate) }}
-                                    </div>
-                                    <div style="margin-top: 0.75rem; font-size: 0.8rem; color: #64748b; font-style: italic;">
-                                        This is your total earnings for the current pay period (since your last payment). Hours accumulate each time you check out after working.
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="payroll-item">
-                                <span class="payroll-label">Last Paid Date:</span>
-                                <span class="payroll-value">
-                                    {% if payroll_info.last_paid_date %}
-                                        {{ payroll_info.last_paid_date }}
-                                    {% else %}
-                                        <span class="never-paid-text">Not paid yet</span>
-                                    {% endif %}
-                                </span>
-                            </div>
-                            <div class="payroll-note">
-                                <p>You are paid every 2 weeks based on hours worked. When marked as paid, your hours will reset to 0.</p>
-                            </div>
-                        </div>
+                    <h2>My Schedule</h2>
+                </div>
+                <div class="card-body">
+                    <div class="schedule-view-tabs">
+                        <button class="schedule-view-tab active" data-view="weekly">Weekly View</button>
+                        <button class="schedule-view-tab" data-view="monthly">Monthly View</button>
                     </div>
-                </div>
-                </div>
 
-                <!-- Schedule Tab -->
-                <div class="worker-tab-content" data-content="schedule">
-                <div class="worker-card schedule-card modern-card">
-                    <div class="card-header modern-card-header">
-                        <div class="card-header-icon">
-                            <span class="material-symbols-outlined">schedule</span>
+                    <!-- Weekly Calendar View -->
+                    <div class="schedule-calendar weekly-calendar active" id="weeklyCalendar">
+                        <div class="calendar-week-header">
+                            <div class="calendar-day-header">Day</div>
+                            <div class="calendar-day-header">Time</div>
+                            <div class="calendar-day-header">Status</div>
                         </div>
-                        <h2>Work Schedule</h2>
-                    </div>
-                    <div class="card-body">
                         {% set days = [
                             ('monday', 'Monday'),
                             ('tuesday', 'Tuesday'),
@@ -369,294 +273,400 @@
                             ('sunday', 'Sunday')
                         ] %}
                         {% set schedule = employee.get('schedule') or {} %}
-                        {% if schedule %}
-                            <div class="schedule-display">
-                                {% for day_key, day_name in days %}
-                                    {% set day_schedule = schedule.get(day_key, {}) %}
-                                    {% if day_schedule %}
-                                        {% set is_enabled = day_schedule.get('enabled') == True or day_schedule.get('enabled') == 'true' or day_schedule.get('enabled') == 1 %}
-                                        {% if is_enabled %}
-                                        <div class="schedule-day-display">
-                                            <span class="schedule-day-name">{{ day_name }}</span>
-                                            <span class="schedule-day-time">{{ day_schedule.get('start', '09:00') }} - {{ day_schedule.get('end', '17:00') }}</span>
-                                        </div>
-                                        {% else %}
-                                        <div class="schedule-day-display schedule-day-off">
-                                            <span class="schedule-day-name">{{ day_name }}</span>
-                                            <span class="schedule-day-time">Off</span>
-                                        </div>
-                                        {% endif %}
+                        {% for day_key, day_name in days %}
+                            {% set day_schedule = schedule.get(day_key, {}) %}
+                            {% set is_enabled = day_schedule.get('enabled') == True or day_schedule.get('enabled') == 'true' or day_schedule.get('enabled') == 1 %}
+                            <div class="calendar-week-row {% if day_key == datetime.now().strftime('%A').lower() %}today-row{% endif %}">
+                                <div class="calendar-day-name">{{ day_name }}</div>
+                                <div class="calendar-day-time">
+                                    {% if is_enabled %}
+                                        <span class="schedule-time-badge">{{ day_schedule.get('start', '09:00') }} - {{ day_schedule.get('end', '17:00') }}</span>
                                     {% else %}
-                                        <div class="schedule-day-display schedule-day-off">
-                                            <span class="schedule-day-name">{{ day_name }}</span>
-                                            <span class="schedule-day-time">Off</span>
-                                        </div>
+                                        <span class="schedule-off-badge">Off</span>
                                     {% endif %}
-                                {% endfor %}
+                                </div>
+                                <div class="calendar-day-status">
+                                    {% if is_enabled %}
+                                        <span class="status-badge status-active">Scheduled</span>
+                                    {% else %}
+                                        <span class="status-badge status-inactive">Not Scheduled</span>
+                                    {% endif %}
+                                </div>
                             </div>
-                        {% else %}
-                            <p class="schedule-empty">No schedule assigned yet. Please contact your administrator.</p>
-                        {% endif %}
+                            {% endfor %}
                     </div>
-                </div>
-                </div>
 
-                <!-- Profile Tab -->
-                <div class="worker-tab-content" data-content="profile">
-                <!-- Profile Picture Upload Card -->
-                <div class="worker-card profile-picture-card modern-card">
-                    <div class="card-header modern-card-header">
-                        <div class="card-header-icon">
-                            <span class="material-symbols-outlined">photo_camera</span>
+                    <!-- Monthly Calendar View -->
+                    <div class="schedule-calendar monthly-calendar hidden" id="monthlyCalendar">
+                        <div class="calendar-month-header">
+                            <button class="calendar-nav-btn" id="prevMonth">
+                                <span class="material-symbols-outlined">chevron_left</span>
+                            </button>
+                            <h3 id="currentMonthYear">{{ datetime.now().strftime('%B %Y') }}</h3>
+                            <button class="calendar-nav-btn" id="nextMonth">
+                                <span class="material-symbols-outlined">chevron_right</span>
+                            </button>
                         </div>
-                        <h2>Profile Picture</h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="profile-picture-upload">
-                            <div class="profile-picture-preview">
-                                {% if employee.profile_picture %}
-                                    <img src="{{ url_for('static', filename='images/' + employee.profile_picture) }}" alt="Profile Picture" id="profilePreview" onerror="this.style.display='none'; document.getElementById('profilePlaceholder').style.display='flex';">
-                                    <div class="profile-picture-placeholder" id="profilePlaceholder" style="display: none;">
-                                        <span class="material-symbols-outlined">person</span>
-                                    </div>
-                                {% else %}
-                                    <div class="profile-picture-placeholder" id="profilePlaceholder">
-                                        <span class="material-symbols-outlined">person</span>
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <form method="POST" action="{{ url_for('worker_upload_profile_picture') }}" enctype="multipart/form-data" class="profile-picture-form">
-                                <input type="file" name="profile_picture" id="profilePictureInput" accept="image/*" style="display: none;" onchange="previewProfilePicture(this)">
-                                <label for="profilePictureInput" class="btn btn-primary">
-                                    <span class="material-symbols-outlined">upload</span>
-                                    Upload Profile Picture
-                                </label>
-                                <button type="submit" class="btn btn-secondary" id="saveProfilePicture" style="display: none;">
-                                    <span class="material-symbols-outlined">save</span>
-                                    Save Picture
-                                </button>
-                            </form>
+                        <div class="calendar-month-grid" id="monthGrid">
+                            <!-- Calendar will be generated by JavaScript -->
                         </div>
                     </div>
                 </div>
-
-                <div class="worker-card profile-card modern-card">
-                    <div class="card-header modern-card-header">
-                        <div class="card-header-icon">
-                            <span class="material-symbols-outlined">person</span>
-                        </div>
-                        <h2>Employee Profile</h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="profile-info-grid">
-                            <div class="info-item">
-                                <span class="info-label">Employee ID</span>
-                                <span class="info-value">{{ employee.employee_id }}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Full Name</span>
-                                <span class="info-value">{{ employee.first_name }} {{ employee.last_name }}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Job Title</span>
-                                <span class="info-value">{{ employee.job_title or 'Not assigned' }}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Email</span>
-                                <span class="info-value">{{ employee.email }}</span>
-                            </div>
-                            {% if employee.mobile %}
-                            <div class="info-item">
-                                <span class="info-label">Mobile</span>
-                                <span class="info-value">{{ employee.mobile }}</span>
-                            </div>
-                            {% endif %}
-                            {% if employee.gender %}
-                            <div class="info-item">
-                                <span class="info-label">Gender</span>
-                                <span class="info-value">{{ employee.gender }}</span>
-                            </div>
-                            {% endif %}
-                            {% if employee.dob %}
-                            <div class="info-item">
-                                <span class="info-label">Date of Birth</span>
-                                <span class="info-value">{{ employee.dob }}</span>
-                            </div>
-                            {% endif %}
-                            {% if employee.address %}
-                            <div class="info-item full-width">
-                                <span class="info-label">Address</span>
-                                <span class="info-value">{{ employee.address }}</span>
-                            </div>
-                            {% endif %}
-                            <div class="info-item">
-                                <span class="info-label">Status</span>
-                                <span class="info-value status-badge status-{{ employee.status }}">
-                                    {{ employee.status|title }}
-                                </span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Joined</span>
-                                <span class="info-value">{{ employee.created_at }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Logout Card -->
-                <div class="worker-card logout-card modern-card">
-                    <div class="card-header modern-card-header">
-                        <div class="card-header-icon" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);">
-                            <span class="material-symbols-outlined">logout</span>
-                        </div>
-                        <h2>Account Actions</h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="logout-section">
-                            <p style="color: #64748b; margin-bottom: 1.5rem; font-size: 0.9rem;">Sign out of your employee account. You'll need to log in again to access your dashboard.</p>
-                            <a href="{{ url_for('worker_logout') }}" class="btn btn-danger btn-large" onclick="return confirm('Are you sure you want to log out?');" style="display: inline-flex; align-items: center; gap: 0.5rem;">
-                                <span class="material-symbols-outlined">logout</span>
-                                <span>Log Out</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                </div>
-
-                <!-- Notes Tab -->
-                {% if employee.notes %}
-                <div class="worker-tab-content" data-content="notes">
-                <div class="worker-card notes-card modern-card">
-                    <div class="card-header modern-card-header">
-                        <div class="card-header-icon">
-                            <span class="material-symbols-outlined">note</span>
-                        </div>
-                        <h2>Notes</h2>
-                    </div>
-                    <div class="card-body">
-                        <p class="notes-content">{{ employee.notes }}</p>
-                    </div>
-                </div>
-                </div>
-                {% endif %}
             </div>
-        </div>
+        </section>
+
+        <!-- Payroll Section -->
+        <section class="worker-section hidden" data-section="payroll">
+            <div class="worker-card">
+                <div class="card-header modern-card-header">
+                    <div class="card-header-icon">
+                        <span class="material-symbols-outlined">payments</span>
+                    </div>
+                    <h2>Payroll Information</h2>
+                </div>
+                <div class="card-body">
+                    <div class="payroll-info">
+                        <div class="payroll-item">
+                            <span class="payroll-label">Your Hourly Rate:</span>
+                            <span class="payroll-value rate-value" style="font-weight: 700; color: #3b82f6;">${{ "%.2f"|format(hourly_rate) }}/hour</span>
+                            {% if employee.hourly_rate %}
+                                <div style="font-size: 0.75rem; color: #10b981; margin-top: 0.25rem;">Individual Rate</div>
+                            {% elif employee.job_title %}
+                                <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">Based on your role: {{ employee.job_title }}</div>
+                            {% else %}
+                                <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">Default Rate</div>
+                            {% endif %}
+                        </div>
+                        <div class="payroll-item">
+                            <span class="payroll-label">Hours This Period:</span>
+                            <span class="payroll-value hours-value" style="font-weight: 700; color: #1e293b;">{{ (payroll_info.hours_this_period or 0)|format_hours }}</span>
+                            <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">
+                                ({{ "%.2f"|format(payroll_info.hours_this_period or 0) }} hours)
+                            </div>
+                        </div>
+                        <div class="payroll-item earnings-item" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(37, 99, 235, 0.12) 100%); border-radius: 12px; padding: 1.25rem; border: 2px solid rgba(59, 130, 246, 0.2);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                <span class="payroll-label" style="font-weight: 700; color: #1e293b;">Current Earnings:</span>
+                                <span class="payroll-value earnings-value" style="font-size: 1.5rem; font-weight: 800; color: #10b981;">${{ "%.2f"|format((payroll_info.hours_this_period or 0) * hourly_rate) }}</span>
+                            </div>
+                            <div style="font-size: 0.85rem; color: #475569; line-height: 1.6; padding: 0.75rem; background: rgba(255, 255, 255, 0.6); border-radius: 8px; border-left: 3px solid #3b82f6;">
+                                <div style="margin-bottom: 0.5rem;">
+                                    <strong style="color: #1e40af;">Calculation:</strong>
+                                </div>
+                                <div style="font-family: 'Courier New', monospace; color: #1e293b;">
+                                    {{ "%.2f"|format(payroll_info.hours_this_period or 0) }} hours × ${{ "%.2f"|format(hourly_rate) }}/hour = ${{ "%.2f"|format((payroll_info.hours_this_period or 0) * hourly_rate) }}
+                                </div>
+                                <div style="margin-top: 0.75rem; font-size: 0.8rem; color: #64748b; font-style: italic;">
+                                    This is your total earnings for the current pay period (since your last payment). Hours accumulate each time you check out after working.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="payroll-item">
+                            <span class="payroll-label">Last Paid Date:</span>
+                            <span class="payroll-value">
+                                {% if payroll_info.last_paid_date %}
+                                    {{ payroll_info.last_paid_date }}
+                                {% else %}
+                                    <span class="never-paid-text">Not paid yet</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="payroll-note">
+                            <p>You are paid every 2 weeks based on hours worked. When marked as paid, your hours will reset to 0.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Profile Section -->
+        <section class="worker-section hidden" data-section="profile">
+            <!-- Profile Picture Upload Card -->
+            <div class="worker-card">
+                <div class="card-header modern-card-header">
+                    <div class="card-header-icon">
+                        <span class="material-symbols-outlined">photo_camera</span>
+                    </div>
+                    <h2>Profile Picture</h2>
+                </div>
+                <div class="card-body">
+                    <div class="profile-picture-upload">
+                        <div class="profile-picture-preview">
+                            {% if employee.profile_picture %}
+                                <img src="{{ url_for('static', filename='images/' + employee.profile_picture) }}" alt="Profile Picture" id="profilePreview" onerror="this.style.display='none'; document.getElementById('profilePlaceholder').style.display='flex';">
+                                <div class="profile-picture-placeholder" id="profilePlaceholder" style="display: none;">
+                                    <span class="material-symbols-outlined">person</span>
+                                </div>
+                            {% else %}
+                                <div class="profile-picture-placeholder" id="profilePlaceholder">
+                                    <span class="material-symbols-outlined">person</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <form method="POST" action="{{ url_for('worker_upload_profile_picture') }}" enctype="multipart/form-data" class="profile-picture-form">
+                            <input type="file" name="profile_picture" id="profilePictureInput" accept="image/*" style="display: none;" onchange="previewProfilePicture(this)">
+                            <label for="profilePictureInput" class="btn btn-primary">
+                                <span class="material-symbols-outlined">upload</span>
+                                Upload Profile Picture
+                            </label>
+                            <button type="submit" class="btn btn-secondary" id="saveProfilePicture" style="display: none;">
+                                <span class="material-symbols-outlined">save</span>
+                                Save Picture
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="worker-card">
+                <div class="card-header modern-card-header">
+                    <div class="card-header-icon">
+                        <span class="material-symbols-outlined">person</span>
+                    </div>
+                    <h2>Employee Profile</h2>
+                </div>
+                <div class="card-body">
+                    <div class="profile-info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Employee ID</span>
+                            <span class="info-value">{{ employee.employee_id }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Full Name</span>
+                            <span class="info-value">{{ employee.first_name }} {{ employee.last_name }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Job Title</span>
+                            <span class="info-value">{{ employee.job_title or 'Not assigned' }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Email</span>
+                            <span class="info-value">{{ employee.email }}</span>
+                        </div>
+                        {% if employee.mobile %}
+                        <div class="info-item">
+                            <span class="info-label">Mobile</span>
+                            <span class="info-value">{{ employee.mobile }}</span>
+                        </div>
+                        {% endif %}
+                        {% if employee.gender %}
+                        <div class="info-item">
+                            <span class="info-label">Gender</span>
+                            <span class="info-value">{{ employee.gender }}</span>
+                        </div>
+                        {% endif %}
+                        {% if employee.dob %}
+                        <div class="info-item">
+                            <span class="info-label">Date of Birth</span>
+                            <span class="info-value">{{ employee.dob }}</span>
+                        </div>
+                        {% endif %}
+                        {% if employee.address %}
+                        <div class="info-item full-width">
+                            <span class="info-label">Address</span>
+                            <span class="info-value">{{ employee.address }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="info-item">
+                            <span class="info-label">Status</span>
+                            <span class="info-value status-badge status-{{ employee.status }}">
+                                {{ employee.status|title }}
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Joined</span>
+                            <span class="info-value">{{ employee.created_at }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logout Card -->
+            <div class="worker-card logout-card">
+                <div class="card-header modern-card-header">
+                    <div class="card-header-icon" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);">
+                        <span class="material-symbols-outlined">logout</span>
+                    </div>
+                    <h2>Account Actions</h2>
+                </div>
+                <div class="card-body">
+                    <div class="logout-section">
+                        <p style="color: #64748b; margin-bottom: 1.5rem; font-size: 0.9rem;">Sign out of your employee account. You'll need to log in again to access your dashboard.</p>
+                        <a href="{{ url_for('worker_logout') }}" class="btn btn-danger btn-large" onclick="return confirm('Are you sure you want to log out?');" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                            <span class="material-symbols-outlined">logout</span>
+                            <span>Log Out</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
-    // User Profile Dropdown for Worker Navbar
+    // Schedule data for calendar
+    const scheduleData = {{ (employee.get('schedule') or {})|tojson }};
+    const currentDate = new Date('{{ now.strftime("%Y-%m-%d") if now else "" }}');
+    
+    // Section navigation
     (function() {
         'use strict';
         
-        function initProfileDropdown() {
-            const profileTrigger = document.getElementById('userProfileTrigger');
-            const profileDropdown = document.getElementById('userProfileDropdown');
-            
-            if (!profileTrigger || !profileDropdown) {
-                console.warn('Profile dropdown elements not found');
-                return;
+        function initNavigation() {
+            const navItems = document.querySelectorAll('.worker-nav-item');
+            const sections = document.querySelectorAll('.worker-section');
+
+            function showSection(sectionName) {
+                sections.forEach((section) => {
+                    section.classList.toggle('active', section.dataset.section === sectionName);
+                    section.classList.toggle('hidden', section.dataset.section !== sectionName);
+                });
+                navItems.forEach((btn) => {
+                    btn.classList.toggle('active', btn.dataset.section === sectionName);
+                });
             }
-            
-            let isOpen = false;
-            
-            const closeDropdown = () => {
-                if (!isOpen) return;
-                isOpen = false;
-                profileTrigger.setAttribute('aria-expanded', 'false');
-                profileDropdown.setAttribute('aria-hidden', 'true');
-                profileDropdown.classList.remove('open');
-            };
 
-            const openDropdown = () => {
-                if (isOpen) return;
-                isOpen = true;
-                profileTrigger.setAttribute('aria-expanded', 'true');
-                profileDropdown.setAttribute('aria-hidden', 'false');
-                profileDropdown.classList.add('open');
-            };
-
-            const toggleDropdown = (e) => {
-                if (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-                if (isOpen) {
-                    closeDropdown();
-                } else {
-                    openDropdown();
-                }
-            };
-
-            // Click handler for trigger
-            profileTrigger.addEventListener('click', toggleDropdown);
-            
-            // Also handle mousedown to ensure it works
-            profileTrigger.addEventListener('mousedown', (e) => {
-                e.preventDefault();
+            navItems.forEach((item) => {
+                item.addEventListener('click', function() {
+                    const sectionName = this.dataset.section;
+                    showSection(sectionName);
+                    
+                    // Initialize calendar if schedule section
+                    if (sectionName === 'schedule') {
+                        initMonthlyCalendar();
+                    }
+                });
             });
 
-            // Close dropdown when clicking on links inside
-            profileDropdown.addEventListener('click', (e) => {
-                const link = e.target.closest('a');
-                if (link && link.href) {
-                    // Allow navigation, then close
-                    setTimeout(closeDropdown, 150);
-                }
-            });
-
-            // Close dropdown when clicking outside
-            document.addEventListener('click', (e) => {
-                if (isOpen && 
-                    !profileTrigger.contains(e.target) && 
-                    !profileDropdown.contains(e.target)) {
-                    closeDropdown();
-                }
-            });
-
-            // Close dropdown on escape key
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && isOpen) {
-                    closeDropdown();
-                }
-            });
+            // Show initial section
+            const initialSection = document.querySelector('.worker-content').dataset.initialSection || 'dashboard';
+            showSection(initialSection);
         }
         
-        // Initialize when DOM is ready
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initProfileDropdown);
+            document.addEventListener('DOMContentLoaded', initNavigation);
         } else {
-            initProfileDropdown();
+            initNavigation();
         }
     })();
 
-    // Scroll functions for dropdown links
-    function scrollToProfile() {
-        const profileSection = document.getElementById('profile');
-        if (profileSection) {
-            profileSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            // Close dropdown
-            const dropdown = document.getElementById('userProfileDropdown');
-            if (dropdown) {
-                dropdown.classList.remove('open');
+    // Schedule view tabs (Weekly/Monthly)
+    (function() {
+        'use strict';
+        
+        function initScheduleTabs() {
+            const tabs = document.querySelectorAll('.schedule-view-tab');
+            const weeklyView = document.getElementById('weeklyCalendar');
+            const monthlyView = document.getElementById('monthlyCalendar');
+
+            tabs.forEach((tab) => {
+                tab.addEventListener('click', function() {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const view = this.dataset.view;
+                    if (view === 'weekly') {
+                        weeklyView.classList.add('active');
+                        weeklyView.classList.remove('hidden');
+                        monthlyView.classList.add('hidden');
+                        monthlyView.classList.remove('active');
+                    } else {
+                        monthlyView.classList.add('active');
+                        monthlyView.classList.remove('hidden');
+                        weeklyView.classList.add('hidden');
+                        weeklyView.classList.remove('active');
+                        initMonthlyCalendar();
+                    }
+                });
+            });
+        }
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initScheduleTabs);
+        } else {
+            initScheduleTabs();
+        }
+    })();
+
+    // Monthly Calendar Generation
+    let currentCalendarMonth = new Date().getMonth();
+    let currentCalendarYear = new Date().getFullYear();
+    
+    function initMonthlyCalendar() {
+        const monthGrid = document.getElementById('monthGrid');
+        if (!monthGrid) return;
+        
+        const firstDay = new Date(currentCalendarYear, currentCalendarMonth, 1);
+        const lastDay = new Date(currentCalendarYear, currentCalendarMonth + 1, 0);
+        const daysInMonth = lastDay.getDate();
+        const startingDayOfWeek = firstDay.getDay();
+        
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const fullDayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const today = new Date();
+        
+        let html = '<div class="calendar-weekdays">';
+        dayNames.forEach(day => {
+            html += `<div class="calendar-weekday">${day}</div>`;
+        });
+        html += '</div>';
+        
+        html += '<div class="calendar-days">';
+        
+        // Empty cells for days before month starts
+        for (let i = 0; i < startingDayOfWeek; i++) {
+            html += '<div class="calendar-day empty"></div>';
+        }
+        
+        // Days of the month
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(currentCalendarYear, currentCalendarMonth, day);
+            const dayOfWeek = fullDayNames[date.getDay()];
+            const daySchedule = scheduleData[dayOfWeek] || {};
+            const isEnabled = daySchedule.enabled === true || daySchedule.enabled === 'true' || daySchedule.enabled === 1;
+            const isToday = day === today.getDate() && currentCalendarMonth === today.getMonth() && currentCalendarYear === today.getFullYear();
+            
+            html += `<div class="calendar-day ${isToday ? 'today' : ''} ${isEnabled ? 'scheduled' : 'not-scheduled'}">`;
+            html += `<div class="calendar-day-number">${day}</div>`;
+            if (isEnabled) {
+                html += `<div class="calendar-day-schedule">${daySchedule.start || '09:00'} - ${daySchedule.end || '17:00'}</div>`;
+            } else {
+                html += `<div class="calendar-day-schedule off">Off</div>`;
             }
+            html += '</div>';
+        }
+        
+        html += '</div>';
+        monthGrid.innerHTML = html;
+        
+        // Update month/year display
+        const monthYearEl = document.getElementById('currentMonthYear');
+        if (monthYearEl) {
+            const monthDate = new Date(currentCalendarYear, currentCalendarMonth, 1);
+            monthYearEl.textContent = monthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
         }
     }
 
-    function scrollToSchedule() {
-        // Switch to schedule tab instead of scrolling
-        const scheduleTab = document.querySelector('[data-tab="schedule"]');
-        if (scheduleTab) {
-            scheduleTab.click();
+    // Month navigation
+    document.getElementById('prevMonth')?.addEventListener('click', function() {
+        currentCalendarMonth--;
+        if (currentCalendarMonth < 0) {
+            currentCalendarMonth = 11;
+            currentCalendarYear--;
         }
-        // Close dropdown
-        const dropdown = document.getElementById('userProfileDropdown');
-        if (dropdown) {
-            dropdown.classList.remove('open');
+        initMonthlyCalendar();
+    });
+
+    document.getElementById('nextMonth')?.addEventListener('click', function() {
+        currentCalendarMonth++;
+        if (currentCalendarMonth > 11) {
+            currentCalendarMonth = 0;
+            currentCalendarYear++;
         }
-    }
+        initMonthlyCalendar();
+    });
 
     // Live Time Clock
     function updateLiveClock() {
@@ -720,7 +730,6 @@
                 const saveButton = document.getElementById('saveProfilePicture');
                 
                 if (!preview) {
-                    // Create img element if it doesn't exist
                     const img = document.createElement('img');
                     img.id = 'profilePreview';
                     img.src = e.target.result;
@@ -745,57 +754,41 @@
         }
     }
 
-    // Tab functionality
-    (function() {
-        'use strict';
-        
-        function initTabs() {
-            const tabs = document.querySelectorAll('.worker-tab');
-            const tabContents = document.querySelectorAll('.worker-tab-content');
-
-            function showTab(tabName) {
-                // Hide all tab contents
-                tabContents.forEach(content => {
-                    content.classList.remove('active');
-                });
-
-                // Remove active class from all tabs
-                tabs.forEach(tab => {
-                    tab.classList.remove('active');
-                });
-
-                // Show selected tab content
-                const selectedContent = document.querySelector(`[data-content="${tabName}"]`);
-                if (selectedContent) {
-                    selectedContent.classList.add('active');
-                }
-
-                // Add active class to selected tab
-                const selectedTab = document.querySelector(`[data-tab="${tabName}"]`);
-                if (selectedTab) {
-                    selectedTab.classList.add('active');
-                }
+    // Check-in time validation
+    document.getElementById('checkinBtn')?.addEventListener('click', function(e) {
+        {% if has_schedule_today %}
+        const todaySchedule = scheduleData['{{ today_weekday }}'] || {};
+        if (todaySchedule.enabled) {
+            const now = new Date();
+            const currentTime = now.getHours() * 60 + now.getMinutes(); // minutes since midnight
+            
+            const startTime = todaySchedule.start || '09:00';
+            const endTime = todaySchedule.end || '17:00';
+            
+            const [startHour, startMin] = startTime.split(':').map(Number);
+            const [endHour, endMin] = endTime.split(':').map(Number);
+            
+            const scheduleStart = startHour * 60 + startMin;
+            const scheduleEnd = endHour * 60 + endMin;
+            
+            // Allow check-in 15 minutes before scheduled time
+            const checkInWindowStart = scheduleStart - 15;
+            const checkInWindowEnd = scheduleEnd;
+            
+            if (currentTime < checkInWindowStart) {
+                e.preventDefault();
+                alert(`You can only check in 15 minutes before your scheduled time (${startTime}). Your schedule starts at ${startTime}.`);
+                return false;
             }
-
-            // Add click handlers to tabs
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const tabName = this.dataset.tab;
-                    showTab(tabName);
-                });
-            });
-
-            // Show attendance tab by default
-            showTab('attendance');
+            
+            if (currentTime > checkInWindowEnd) {
+                e.preventDefault();
+                alert(`Your scheduled time has ended (${endTime}). Please contact your administrator if you need to check in.`);
+                return false;
+            }
         }
-        
-        // Initialize when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initTabs);
-        } else {
-            initTabs();
-        }
-    })();
+        {% endif %}
+    });
 </script>
 {% endblock %}
 

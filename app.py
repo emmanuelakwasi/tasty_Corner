@@ -2511,6 +2511,10 @@ def worker_dashboard():
     hours_week = get_hours_worked_this_week(employee_id)
     overtime_status = get_overtime_status(employee_id)
     
+    # Get today's weekday and current datetime for template
+    today_weekday = datetime.now().strftime('%A').lower()
+    now = datetime.now()
+    
     return render_template('worker/dashboard.html', 
                          employee=employee, 
                          attendance=attendance,
@@ -2519,11 +2523,13 @@ def worker_dashboard():
                          hourly_rate=hourly_rate,
                          hours_today=hours_today,
                          hours_week=hours_week,
-                         overtime_status=overtime_status)
+                         overtime_status=overtime_status,
+                         today_weekday=today_weekday,
+                         now=now)
 
 @app.route('/worker/checkin', methods=['POST'])
 def worker_checkin():
-    """Employee check-in"""
+    """Employee check-in - only allowed during scheduled times"""
     if 'worker_id' not in session:
         flash('Please log in first', 'error')
         return redirect(url_for('worker_login'))
@@ -2544,6 +2550,33 @@ def worker_checkin():
     if not has_schedule_today:
         flash('You do not have a schedule for today. Please contact your administrator.', 'error')
         return redirect(url_for('worker_dashboard'))
+    
+    # Check if current time is within scheduled time window
+    now = datetime.now()
+    current_time = now.time()
+    
+    start_time_str = today_schedule.get('start', '09:00')
+    end_time_str = today_schedule.get('end', '17:00')
+    
+    try:
+        start_time = datetime.strptime(start_time_str, '%H:%M').time()
+        end_time = datetime.strptime(end_time_str, '%H:%M').time()
+        
+        # Allow check-in 15 minutes before scheduled start time
+        start_window = (datetime.combine(now.date(), start_time) - timedelta(minutes=15)).time()
+        
+        # Check if current time is within the allowed window
+        if current_time < start_window:
+            flash(f'You can only check in 15 minutes before your scheduled time. Your schedule starts at {start_time_str}.', 'error')
+            return redirect(url_for('worker_dashboard'))
+        
+        if current_time > end_time:
+            flash(f'Your scheduled time has ended ({end_time_str}). Please contact your administrator if you need to check in.', 'error')
+            return redirect(url_for('worker_dashboard'))
+        
+    except ValueError:
+        # If time parsing fails, allow check-in but log warning
+        pass
     
     success = check_in_employee(employee_id)
     
