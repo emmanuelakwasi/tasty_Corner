@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Order History - TastyCorner{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="orders-header">
+        <h1>📋 My Orders</h1>
+        <p>View and reorder your previous orders</p>
+    </div>
+
+{% if orders %}
+<div class="orders-list">
+    {% for order in orders %}
+    <div class="order-card">
+        <div class="order-card-header">
+            <div class="order-info">
+                <h3>Order #{{ order.order_id }}</h3>
+                <p class="order-date">📅 {{ order.created_at }}</p>
+                <span class="order-status status-{{ order.status }}">{{ order.status|title }}</span>
+            </div>
+            <div class="order-total">
+                <span class="total-label">Total</span>
+                <span class="total-value">${{ "%.2f"|format(order.total|float) }}</span>
+            </div>
+        </div>
+        
+        <div class="order-items-preview">
+            <p class="items-count">{{ order['items']|length }} item{{ 's' if order['items']|length != 1 else '' }}</p>
+            <div class="items-list">
+                {% for item in order['items'][:3] %}
+                <span class="item-badge">{{ item.name }} x{{ item.quantity }}</span>
+                {% endfor %}
+                {% if order['items']|length > 3 %}
+                <span class="item-badge">+{{ order['items']|length - 3 }} more</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if order['allergies'] %}
+        <div class="order-allergies">
+            <strong>⚠️ Allergies:</strong>
+            {% for allergy in order['allergies'] %}
+            <span class="allergy-badge">{{ allergy }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <div class="order-breakdown">
+            <div class="breakdown-row">
+                <span>Subtotal:</span>
+                <span>${{ "%.2f"|format(order.subtotal|float) }}</span>
+            </div>
+            {% if order.get('coupon_code') and order.get('discount') and order.discount|float > 0 %}
+            <div class="breakdown-row" style="color: #10b981;">
+                <span>🎟️ Discount ({{ order.coupon_code }}):</span>
+                <span>-${{ "%.2f"|format(order.discount|float) }}</span>
+            </div>
+            {% endif %}
+            <div class="breakdown-row">
+                <span>Tax:</span>
+                <span>${{ "%.2f"|format(order.tax|float) }}</span>
+            </div>
+            <div class="breakdown-row">
+                <span>Delivery:</span>
+                <span>${{ "%.2f"|format(order.delivery_fee|float) }}</span>
+            </div>
+            {% if order.tip|float > 0 %}
+            <div class="breakdown-row">
+                <span>Tip:</span>
+                <span>${{ "%.2f"|format(order.tip|float) }}</span>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="order-actions">
+            <a href="{{ url_for('order_confirmation', order_id=order.order_id) }}" class="btn btn-secondary btn-sm">View Details</a>
+            <a href="{{ url_for('reorder', order_id=order.order_id) }}" class="btn btn-primary btn-sm">🔄 Reorder</a>
+            {% if order.status not in ['cancelled', 'completed'] %}
+                {% set order_time = order.created_at.split('.')[0] if '.' in order.created_at else order.created_at %}
+                {% set can_cancel = true %}
+                <form method="POST" action="{{ url_for('cancel_order', order_id=order.order_id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to cancel this order? Refund will be processed within 3-5 business days.');">
+                    <button type="submit" class="btn btn-danger btn-sm">❌ Cancel Order</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-orders">
+    <div class="empty-icon">📋</div>
+    <p>You haven't placed any orders yet</p>
+    <p class="empty-subtitle">Start ordering delicious food now!</p>
+    <a href="{{ url_for('menu') }}" class="btn btn-primary">Browse Menu</a>
+</div>
+{% endif %}
+</div>
+{% endblock %}
+

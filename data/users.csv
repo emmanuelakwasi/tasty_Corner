@@ -1,0 +1,5 @@
+user_id,email,password_hash,name,phone,address,created_at
+1,opokuakwasi239@gmail.com,scrypt:32768:8:1$ik3W81puXy4HECqs$c64c2448bb565683c711032b312525a891e26824e8794b7c68fbd21cf725c63bcca6956ff6ac6e3faf59f81760fe5cb254d896ee6c11bd251ce1bcb4cf0c4516,EMMANUEL AKWASI OPOKU,admin,"Akwasi Mante Street
+AK-678-5841",2025-11-10 19:38:48
+2,mannie.opoku@gmail.com,scrypt:32768:8:1$JbayIPVUiF5DRG1o$3c2007b6ad1336a114c9a08aad92aac906cf49b8b754fc2204054e869f3300924fada1d0de74d05d1044d01f4325169651eca1609bf39bbcd09e66ed5d7facb1,EMMANUEL AKWASI OPOKU,3183946861,"Akwasi Mante Street
+AK-678-5841",2025-11-10 19:40:21

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up - TastyCorner{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="auth-wrapper signup-wrapper">
+        <div class="auth-hero">
+            <div class="auth-hero-top">
+                <span class="auth-badge">New here? ✨</span>
+                <h1>Join the TastyCorner Family</h1>
+                <p>Become part of our community and enjoy exclusive perks, mouthwatering deals, and priority delivery.</p>
+            </div>
+            <ul class="auth-benefits">
+                <li>🚚 Free delivery on your first order</li>
+                <li>🍰 Access to member-only specials</li>
+                <li>💌 Personalized recommendations</li>
+                <li>⭐ Earn rewards with every purchase</li>
+            </ul>
+            <div class="auth-stats">
+                <div class="auth-stat">
+                    <span>500+</span>
+                    <small>Happy Members</small>
+                </div>
+                <div class="auth-stat">
+                    <span>4.8★</span>
+                    <small>Average Rating</small>
+                </div>
+                <div class="auth-stat">
+                    <span>30min</span>
+                    <small>Avg Delivery</small>
+                </div>
+            </div>
+        </div>
+        <div class="auth-card">
+            <div class="auth-card-header">
+                <h2>Create Your Account</h2>
+                <p class="auth-subtitle">It only takes a minute to get started</p>
+            </div>
+            <form method="POST" class="auth-form">
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" name="name" placeholder="e.g. Sarah Johnson" autocomplete="name" required>
+                    </div>
+                    <div class="form-group half">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" placeholder="(555) 123-4567" autocomplete="tel" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" placeholder="you@example.com" autocomplete="email" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="address">Delivery Address</label>
+                        <textarea id="address" name="address" rows="3" placeholder="Street, City, ZIP" autocomplete="street-address" required></textarea>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Create a secure password" autocomplete="new-password" required>
+                        <p class="form-hint">Use 8 or more characters with a mix of letters, numbers & symbols.</p>
+                    </div>
+                </div>
+                <div class="form-options">
+                    <label class="checkbox">
+                        <input type="checkbox" required>
+                        <span>I agree to the <a href="#">Terms & Conditions</a></span>
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block btn-large">Create Account</button>
+            </form>
+            <p class="auth-footer">
+                Already have an account? <a href="{{ url_for('signin') }}">Sign in instead</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

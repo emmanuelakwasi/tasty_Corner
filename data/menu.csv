@@ -1,0 +1,9 @@
+item_id,name,description,price,category,image
+1,Classic Burger,"Juicy beef patty with lettuce, tomato, onion, and special sauce",12.99,Main Course,burger.jpg
+2,Caesar Salad,"Fresh romaine lettuce with parmesan, croutons, and Caesar dressing",10.99,Salads,caesar.jpg
+3,Margherita Pizza,"Classic pizza with tomato sauce, mozzarella, and basil",14.99,Main Course,pizza.jpg
+4,Chicken Wings,Crispy chicken wings with your choice of sauce,11.99,Appetizers,wings.jpg
+5,Fish & Chips,Beer-battered fish with crispy fries,13.99,Main Course,fish.jpg
+6,Chocolate Cake,Rich chocolate cake with vanilla ice cream,7.99,Desserts,cake.jpg
+7,Onion Rings,Beer-battered onion rings with chipotle aioli,7.99,Appetizers,rings.jpg
+8,Greek Salad,"Fresh vegetables, feta cheese, olives, and Greek dressing",11.99,Salads,greek_salad.jpg

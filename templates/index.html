@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}Home - TastyCorner{% endblock %}
+
+{% block content %}
+<!-- Hero Section with Animation -->
+<div class="hero">
+    <div class="hero-background">
+        <div class="hero-pattern"></div>
+    </div>
+    <div class="hero-content">
+        <div class="hero-badge">Award-Winning Cuisine</div>
+        <h1 class="hero-title">
+            <span class="hero-title-line">Welcome to</span>
+            <span class="hero-title-main">TastyCorner</span>
+        </h1>
+        <p class="hero-subtitle">Where Every Bite Tells a Story! We're passionate about bringing you incredible flavors that make every meal memorable. From our kitchen to your table, crafted with love and the finest ingredients.</p>
+        <div class="hero-stats">
+            <div class="stat-item">
+                <div class="stat-number">500+</div>
+                <div class="stat-label">Happy Customers</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">4.8★</div>
+                <div class="stat-label">Average Rating</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">30min</div>
+                <div class="stat-label">Avg Delivery</div>
+            </div>
+        </div>
+        <div class="hero-buttons">
+            {% if session.user_id %}
+                <a href="{{ url_for('menu') }}" class="btn btn-primary btn-large btn-animate">Order Now</a>
+                <a href="{{ url_for('cart') }}" class="btn btn-secondary btn-large">View Cart</a>
+            {% else %}
+                <a href="{{ url_for('signup') }}" class="btn btn-primary btn-large btn-animate">Get Started Free</a>
+                <a href="{{ url_for('menu') }}" class="btn btn-secondary btn-large">Browse Menu</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Special Offer Banner -->
+<div class="offer-banner">
+    <div class="offer-content">
+        <div class="offer-text">
+            <strong>First Order Special!</strong> Get 15% off your first order. Use code: <span class="offer-code">WELCOME15</span>
+        </div>
+        <a href="{{ url_for('menu') }}" class="offer-button">Order Now →</a>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="features-section">
+    <div class="section-header">
+        <h2>Why You'll Love TastyCorner</h2>
+        <p>We're not just another restaurant—we're your culinary partners in creating amazing moments</p>
+    </div>
+    <div class="features">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <img src="{{ url_for('static', filename='images/features/fresh-ingredients.png') }}" alt="Fresh & Delicious" loading="lazy" decoding="async" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="icon-placeholder" style="display:none;">🍔</div>
+            </div>
+            <h3>Fresh & Delicious</h3>
+            <p>Handcrafted with premium ingredients, sourced locally. Every dish is prepared fresh to order.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">
+                <img src="{{ url_for('static', filename='images/features/fast-delivery.png') }}" alt="Lightning Fast Delivery" loading="lazy" decoding="async" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="icon-placeholder" style="display:none;">🚚</div>
+            </div>
+            <h3>Lightning Fast Delivery</h3>
+            <p>Get your favorite meals delivered hot and fresh in 30 minutes or less. We guarantee it!</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">
+                <img src="{{ url_for('static', filename='images/features/secure-payment.png') }}" alt="Secure Payments" loading="lazy" decoding="async" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="icon-placeholder" style="display:none;">💳</div>
+            </div>
+            <h3>Secure Payments</h3>
+            <p>Safe and secure checkout with Stripe. Multiple payment options for your convenience.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">
+                <img src="{{ url_for('static', filename='images/features/allergy-friendly.png') }}" alt="Allergy-Friendly" loading="lazy" decoding="async" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="icon-placeholder" style="display:none;">🥗</div>
+            </div>
+            <h3>Allergy-Friendly</h3>
+            <p>Your health matters. Specify allergies and dietary preferences - we'll take care of the rest.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">
+                <img src="{{ url_for('static', filename='images/features/rated.png') }}" alt="Rated 4.8/5" loading="lazy" decoding="async" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="icon-placeholder" style="display:none;">⭐</div>
+            </div>
+            <h3>Rated 4.8/5</h3>
+            <p>Join hundreds of satisfied customers who love our food and service. See what they're saying!</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">
+                <img src="{{ url_for('static', filename='images/features/loyalty-rewards.png') }}" alt="Loyalty Rewards" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="icon-placeholder" style="display:none;">🎁</div>
+            </div>
+            <h3>Loyalty Rewards</h3>
+            <p>Earn points with every order. Unlock exclusive deals and discounts for frequent customers.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Menu Items -->
+<div class="featured-section">
+    <div class="section-header">
+        <h2>Chef's Specials</h2>
+        <p>Our most popular dishes, loved by customers</p>
+    </div>
+    <div class="featured-items">
+        {% if featured_items %}
+            {% for item in featured_items[:4] %}
+            <div class="featured-item">
+                <div class="featured-image">
+                            {% if item.image %}
+                            <img src="{{ url_for('static', filename='images/' + item.image) }}" 
+                                 alt="{{ item.name }}"
+                                 loading="lazy"
+                                 decoding="async"
+                                 onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="image-placeholder" style="display:none; font-size: 48px;">
+                        <p>Image Coming Soon</p>
+                    </div>
+                    {% else %}
+                    <div class="image-placeholder">
+                        <p>Image Coming Soon</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <h3>{{ item.name }}</h3>
+                <p>{{ item.description }}</p>
+                <div class="featured-price">${{ "%.2f"|format(item.price) }}</div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <!-- Fallback if no featured items -->
+            <div class="featured-item">
+                <div class="featured-image">
+                    <img src="{{ url_for('static', filename='images/burger.jpg') }}" alt="Classic Burger">
+                </div>
+                <h3>Classic Burger</h3>
+                <p>Juicy, tender, and perfectly seasoned</p>
+                <div class="featured-price">$12.99</div>
+            </div>
+            <div class="featured-item">
+                <div class="featured-image">
+                    <img src="{{ url_for('static', filename='images/pizza.jpg') }}" alt="Margherita Pizza">
+                </div>
+                <h3>Margherita Pizza</h3>
+                <p>Classic Italian with fresh basil</p>
+                <div class="featured-price">$14.99</div>
+            </div>
+            <div class="featured-item">
+                <div class="featured-image">
+                    <img src="{{ url_for('static', filename='images/wings.jpg') }}" alt="Chicken Wings">
+                </div>
+                <h3>Chicken Wings</h3>
+                <p>Crispy wings with your favorite sauce</p>
+                <div class="featured-price">$11.99</div>
+            </div>
+            <div class="featured-item">
+                <div class="featured-image">
+                    <img src="{{ url_for('static', filename='images/cake.jpg') }}" alt="Chocolate Cake">
+                </div>
+                <h3>Chocolate Cake</h3>
+                <p>Rich, decadent, and irresistible</p>
+                <div class="featured-price">$7.99</div>
+            </div>
+        {% endif %}
+    </div>
+    <div class="featured-cta">
+        <a href="{{ url_for('menu') }}" class="btn btn-primary btn-large">View Full Menu →</a>
+    </div>
+</div>
+
+<!-- Trusted By Section -->
+<div class="trusted-section">
+    <div class="section-header">
+        <h2>Trusted By Leading Institutions</h2>
+        <p>Proudly serving universities and colleges across the state</p>
+    </div>
+    <div class="trusted-slider">
+        <div class="trusted-track">
+            <div class="trusted-logo">
+                <img src="{{ url_for('static', filename='images/logos/lsu.png') }}" alt="Louisiana State University" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-size=%2240%22 fill=%22%23667eea%22%3ELSU%3C/text%3E%3C/svg%3E';">
+                <span>Louisiana State University</span>
+            </div>
+            <div class="trusted-logo">
+                <img src="{{ url_for('static', filename='images/logos/tulane.png') }}" alt="Tulane University" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-size=%2235%22 fill=%22%23667eea%22%3ETulane%3C/text%3E%3C/svg%3E';">
+                <span>Tulane University</span>
+            </div>
+            <div class="trusted-logo">
+                <img src="{{ url_for('static', filename='images/logos/university-of-louisiana.png') }}" alt="University of Louisiana" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-size=%2228%22 fill=%22%23667eea%22%3EUL%3C/text%3E%3C/svg%3E';">
+                <span>University of Louisiana</span>
+            </div>
+            <div class="trusted-logo">
+                <img src="{{ url_for('static', filename='images/logos/xavier.png') }}" alt="Xavier University" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-size=%2230%22 fill=%22%23667eea%22%3EXavier%3C/text%3E%3C/svg%3E';">
+                <span>Xavier University</span>
+            </div>
+            <div class="trusted-logo">
+                <img src="{{ url_for('static', filename='images/logos/southern-university.png') }}" alt="Southern University" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-size=%2225%22 fill=%22%23667eea%22%3ESU%3C/text%3E%3C/svg%3E';">
+                <span>Southern University</span>
+            </div>
+            <div class="trusted-logo">
+                <img src="{{ url_for('static', filename='images/logos/dillard.png') }}" alt="Dillard University" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-size=%2228%22 fill=%22%23667eea%22%3EDillard%3C/text%3E%3C/svg%3E';">
+                <span>Dillard University</span>
+            </div>
+            <div class="trusted-logo">
+                <img src="{{ url_for('static', filename='images/logos/loyola.png') }}" alt="Loyola University" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-size=%2228%22 fill=%22%23667eea%22%3ELoyola%3C/text%3E%3C/svg%3E';">
+                <span>Loyola University</span>
+            </div>
+            <div class="trusted-logo">
+                <img src="{{ url_for('static', filename='images/logos/delgado.png') }}" alt="Delgado Community College" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-size=%2222%22 fill=%22%23667eea%22%3EDelgado%3C/text%3E%3C/svg%3E';">
+                <span>Delgado Community College</span>
+            </div>
+            <!-- Duplicate for seamless loop -->
+            <div class="trusted-logo">
+                <img src="{{ url_for('static', filename='images/logos/lsu.png') }}" alt="Louisiana State University" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-size=%2240%22 fill=%22%23667eea%22%3ELSU%3C/text%3E%3C/svg%3E';">
+                <span>Louisiana State University</span>
+            </div>
+            <div class="trusted-logo">
+                <img src="{{ url_for('static', filename='images/logos/tulane.png') }}" alt="Tulane University" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-size=%2235%22 fill=%22%23667eea%22%3ETulane%3C/text%3E%3C/svg%3E';">
+                <span>Tulane University</span>
+            </div>
+            <div class="trusted-logo">
+                <img src="{{ url_for('static', filename='images/logos/university-of-louisiana.png') }}" alt="University of Louisiana" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-size=%2228%22 fill=%22%23667eea%22%3EUL%3C/text%3E%3C/svg%3E';">
+                <span>University of Louisiana</span>
+            </div>
+            <div class="trusted-logo">
+                <img src="{{ url_for('static', filename='images/logos/xavier.png') }}" alt="Xavier University" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-size=%2230%22 fill=%22%23667eea%22%3EXavier%3C/text%3E%3C/svg%3E';">
+                <span>Xavier University</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Testimonials Section -->
+<div class="testimonials-section">
+    <div class="section-header">
+        <h2>What Our Customers Say</h2>
+        <p>Real reviews from real customers</p>
+    </div>
+    <div class="testimonials">
+        <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Absolutely amazing food! The burger was cooked to perfection and the delivery was super fast. Will definitely order again!"</p>
+            <div class="testimonial-author">
+                <div class="author-avatar"></div>
+                <div class="author-info">
+                    <div class="author-name">Patrick Selby</div>
+                    <div class="author-location">New Orleans, LA</div>
+                </div>
+            </div>
+        </div>
+        <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Best pizza in town! The allergy accommodations were perfect, and the staff really cares about their customers. Highly recommend!"</p>
+            <div class="testimonial-author">
+                <div class="author-avatar"></div>
+                <div class="author-info">
+                    <div class="author-name">Emmanuel Opoku</div>
+                    <div class="author-location">Kumasi, Ghana</div>
+                </div>
+            </div>
+        </div>
+        <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Incredible service and delicious food. The ordering process was so easy, and my meal arrived hot and fresh. 5 stars!"</p>
+            <div class="testimonial-author">
+                <div class="author-avatar"></div>
+                <div class="author-info">
+                    <div class="author-name">Emily Chen</div>
+                    <div class="author-location">Lafayette, LA</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Section -->
+<div class="cta-section">
+    <div class="cta-content">
+        <h2>Ready to Start Your TastyCorner Journey?</h2>
+        <p>Join our family of food lovers and discover why every bite here tells a story worth savoring!</p>
+        <div class="cta-buttons">
+            {% if session.user_id %}
+                <a href="{{ url_for('menu') }}" class="btn btn-primary btn-large">Order Now</a>
+            {% else %}
+                <a href="{{ url_for('signup') }}" class="btn btn-primary btn-large">Create Free Account</a>
+                <a href="{{ url_for('menu') }}" class="btn btn-outline btn-large">Browse Menu</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Worker Login - TastyCorner{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="auth-wrapper">
+        <div class="auth-hero">
+            <div class="auth-hero-top">
+                <span class="auth-badge">Employee Portal 👷</span>
+                <h1>Welcome Back</h1>
+                <p>Access your employee dashboard with your unique Employee ID. View your profile, work information, and stay connected.</p>
+            </div>
+            <div class="auth-highlights">
+                <div class="highlight-card">
+                    <span class="highlight-icon">👤</span>
+                    <p>View your employee profile</p>
+                </div>
+                <div class="highlight-card">
+                    <span class="highlight-icon">📋</span>
+                    <p>Access work-related information</p>
+                </div>
+                <div class="highlight-card">
+                    <span class="highlight-icon">🔒</span>
+                    <p>Secure access with your ID</p>
+                </div>
+            </div>
+        </div>
+        <div class="auth-card">
+            <div class="auth-card-header">
+                <h2>Worker Login</h2>
+                <p class="auth-subtitle">Enter your Employee ID to continue</p>
+            </div>
+            <form method="POST" class="auth-form">
+                <div class="form-group">
+                    <label for="employee_id">Employee ID</label>
+                    <input 
+                        type="text" 
+                        id="employee_id" 
+                        name="employee_id" 
+                        placeholder="Enter your 6-digit Employee ID" 
+                        required 
+                        maxlength="6"
+                        pattern="[0-9]{6}"
+                        autocomplete="off"
+                        class="form-input"
+                    >
+                    <small class="form-hint">Your Employee ID is a 6-digit number provided by your administrator</small>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block btn-large">Access Dashboard</button>
+            </form>
+            <div class="auth-footer">
+                <p>Need help? <a href="{{ url_for('contact') }}">Contact your administrator</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

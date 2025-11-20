@@ -1,0 +1,35 @@
+{% macro stat_card(icon, label, value, trend, extra_class='') %}
+<div class="admin-stat-card {{ extra_class }}">
+    <span class="stat-icon material-symbols-outlined">{{ icon }}</span>
+    <div class="stat-content">
+        <span class="stat-label">{{ label }}</span>
+        <span class="stat-value">{{ value }}</span>
+        {% if trend %}
+        <span class="stat-trend">{{ trend }}</span>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}
+
+{% macro chart_card(title, canvas_id, title_id=None) %}
+<div class="chart-card">
+    <h3{% if title_id %} id="{{ title_id }}"{% endif %}>{{ title }}</h3>
+    <canvas id="{{ canvas_id }}"></canvas>
+</div>
+{% endmacro %}
+
+{% macro timeline_item(order_id, status, customer, total, created_at) %}
+<div class="timeline-item" data-status="{{ status }}">
+    <div class="timeline-marker"></div>
+    <div class="timeline-content">
+        <div class="timeline-header">
+            <span class="timeline-order">Order #{{ order_id }}</span>
+            <span class="timeline-status status-{{ status }}">{{ status.replace('_', ' ')|title }}</span>
+        </div>
+        <div class="timeline-body">
+            <p>{{ customer }} • {{ total }}</p>
+            <span class="timeline-time">{{ created_at }}</span>
+        </div>
+    </div>
+</div>
+{% endmacro %}

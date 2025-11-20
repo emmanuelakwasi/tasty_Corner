@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Shopping Cart - TastyCorner{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="cart-header">
+        <h1>Your Cart</h1>
+    </div>
+
+{% if cart %}
+<div class="cart-container">
+    <div class="cart-items">
+        {% for item in cart %}
+        <div class="cart-item">
+            <div class="cart-item-info">
+                <h3>{{ item.name }}</h3>
+                <p class="cart-item-price">${{ "%.2f"|format(item.price) }} each</p>
+                {% if item.allergies %}
+                <p class="cart-item-allergies">⚠️ Allergies: {{ item.allergies }}</p>
+                {% endif %}
+                <p class="cart-item-total">Subtotal: ${{ "%.2f"|format(item.price * item.quantity) }}</p>
+            </div>
+            <div class="cart-item-controls">
+                <form method="POST" action="{{ url_for('update_cart_quantity') }}" style="display: inline-flex; align-items: center; gap: 10px;">
+                    <input type="hidden" name="index" value="{{ loop.index0 }}">
+                    <label for="quantity-{{ loop.index0 }}" style="margin: 0;">Quantity:</label>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <button type="button" class="btn btn-sm" onclick="updateQuantity({{ loop.index0 }}, -1)" style="min-width: 30px;">-</button>
+                        <input type="number" name="quantity" id="quantity-{{ loop.index0 }}" value="{{ item.quantity }}" min="1" max="99" style="width: 60px; text-align: center; padding: 5px;" onchange="this.form.submit()">
+                        <button type="button" class="btn btn-sm" onclick="updateQuantity({{ loop.index0 }}, 1)" style="min-width: 30px;">+</button>
+                    </div>
+                </form>
+                <a href="{{ url_for('remove_from_cart', index=loop.index0) }}" class="btn btn-danger btn-sm" onclick="return confirm('Remove {{ item.name }} from cart?')">Remove</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="cart-summary">
+        <h2>Order Summary</h2>
+        <div class="summary-row">
+            <span>Subtotal:</span>
+            <span>${{ "%.2f"|format(subtotal) }}</span>
+        </div>
+        <div class="summary-note">
+            <p>Tax, delivery fee, and tip will be calculated at checkout</p>
+        </div>
+        <a href="{{ url_for('checkout') }}" class="btn btn-primary btn-block">Proceed to Checkout</a>
+        <a href="{{ url_for('menu') }}" class="btn btn-secondary btn-block">Continue Shopping</a>
+    </div>
+</div>
+{% else %}
+<div class="empty-cart">
+    <p>Your cart is empty</p>
+    <a href="{{ url_for('menu') }}" class="btn btn-primary">Browse Menu</a>
+</div>
+{% endif %}
+</div>
+
+<script>
+function updateQuantity(index, change) {
+    const input = document.getElementById('quantity-' + index);
+    let newValue = parseInt(input.value) + change;
+    if (newValue < 1) newValue = 1;
+    if (newValue > 99) newValue = 99;
+    input.value = newValue;
+    input.form.submit();
+}
+</script>
+{% endblock %}
+

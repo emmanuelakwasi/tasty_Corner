@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Favorites - TastyCorner{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="wishlist-header">
+        <h1>My Favorites</h1>
+        <p>Save your favorite items for later</p>
+    </div>
+
+{% if wishlist %}
+<div class="wishlist-container">
+    <div class="wishlist-items">
+        {% for item in wishlist %}
+        <div class="wishlist-item">
+            <div class="wishlist-item-image">
+                {% if item.image %}
+                <img src="{{ url_for('static', filename='images/' + item.image) }}" 
+                     alt="{{ item.name }}"
+                     onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="image-placeholder" style="display:none;">
+                    <p>Image Coming Soon</p>
+                </div>
+                {% else %}
+                <div class="image-placeholder">
+                    <p>Image Coming Soon</p>
+                </div>
+                {% endif %}
+            </div>
+            <div class="wishlist-item-info">
+                <h3>{{ item.name }}</h3>
+                <p class="wishlist-item-description">{{ item.description }}</p>
+                <div class="wishlist-item-price">${{ "%.2f"|format(item.price) }}</div>
+                <div class="wishlist-item-actions">
+                    <a href="{{ url_for('add_wishlist_to_cart', index=loop.index0) }}" class="btn btn-primary btn-sm">Add to Cart</a>
+                    <a href="{{ url_for('remove_from_wishlist', index=loop.index0) }}" class="btn btn-danger btn-sm">Remove</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<div class="empty-wishlist">
+    <p>Your favorites list is empty</p>
+    <p class="empty-wishlist-subtitle">Start adding items you love to your favorites!</p>
+    <a href="{{ url_for('menu') }}" class="btn btn-primary">Browse Menu</a>
+</div>
+{% endif %}
+</div>
+{% endblock %}
+

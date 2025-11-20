@@ -1,0 +1,2045 @@
+{% extends "admin/base_admin.html" %}
+{% import 'admin/components.html' as cmp %}
+
+{% block title %}Admin Dashboard - TastyCorner{% endblock %}
+
+{% block content %}
+    <div class="admin-layout admin-layout-ambient">
+    <aside class="admin-sidebar">
+        <div class="admin-sidebar-header">
+            <img src="{{ url_for('static', filename='images/fav.png') }}" alt="TastyCorner Logo" class="admin-sidebar-logo">
+            <div>
+                <h2>TastyCorner Admin</h2>
+                <p>Control Center</p>
+            </div>
+        </div>
+        <nav class="admin-side-nav">
+            <button class="admin-nav-item active" data-section="overview">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span>Overview</span>
+            </button>
+            <button class="admin-nav-item" data-section="menu">
+                <span class="material-symbols-outlined">restaurant</span>
+                <span>Menu Items</span>
+            </button>
+            <button class="admin-nav-item" data-section="orders">
+                <span class="material-symbols-outlined">assignment</span>
+                <span>Orders</span>
+            </button>
+            <button class="admin-nav-item" data-section="employees">
+                <span class="material-symbols-outlined">badge</span>
+                <span>Employees</span>
+            </button>
+            <button class="admin-nav-item" data-section="attendance">
+                <span class="material-symbols-outlined">schedule</span>
+                <span>Attendance</span>
+            </button>
+            <button class="admin-nav-item" data-section="payroll">
+                <span class="material-symbols-outlined">payments</span>
+                <span>Payroll</span>
+            </button>
+            <button class="admin-nav-item" data-section="analytics">
+                <span class="material-symbols-outlined">query_stats</span>
+                <span>Analytics</span>
+            </button>
+            <button class="admin-nav-item" data-section="categories">
+                <span class="material-symbols-outlined">category</span>
+                <span>Categories</span>
+            </button>
+            <button class="admin-nav-item" data-section="settings">
+                <span class="material-symbols-outlined">settings</span>
+                <span>Settings</span>
+            </button>
+            <button class="admin-nav-item" data-section="profile">
+                <span class="material-symbols-outlined">account_circle</span>
+                <span>Profile</span>
+            </button>
+            <button class="admin-nav-item" data-section="activity">
+                <span class="material-symbols-outlined">timeline</span>
+                <span>Activity</span>
+            </button>
+        </nav>
+        <div class="admin-sidebar-footer">
+            <div class="admin-credentials">
+                <span class="admin-label">Signed in as</span>
+                <strong>{{ admin_email }}</strong>
+            </div>
+            <a href="{{ url_for('admin_logout') }}" class="btn btn-secondary btn-sm">Sign Out</a>
+        </div>
+    </aside>
+
+    <div class="admin-content" data-initial-section="{{ initial_section }}">
+        <header class="admin-page-header">
+            <div>
+                <h1>Dashboard</h1>
+                <p class="admin-page-subtitle">Monitor performance, manage operations, and stay on top of your restaurant in one place.</p>
+            </div>
+            <div class="admin-page-actions">
+                <div class="admin-page-buttons">
+                    <button type="button" class="btn btn-secondary btn-sm" data-section-trigger="orders">
+                        <span class="material-symbols-outlined">notifications</span>
+                        Recent Orders
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm" data-section-trigger="menu">
+                        <span class="material-symbols-outlined">add</span>
+                        New Menu Item
+                    </button>
+                </div>
+                <div class="admin-profile-menu">
+                    <button type="button" class="admin-profile-chip" data-profile-trigger aria-haspopup="true" aria-expanded="false">
+                        <div class="profile-chip-avatar">
+                            <img src="{{ url_for('static', filename='images/' + (profile.avatar if profile.avatar else 'hero-background.jpg')) }}" alt="Admin avatar" onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/hero-background.jpg') }}';">
+                        </div>
+                        <div class="profile-chip-details">
+                            <span class="profile-chip-name">{{ profile.name or admin_email.split('@')[0] }}</span>
+                            <span class="profile-chip-role">{{ profile.title or 'Administrator' }}</span>
+                        </div>
+                        <span class="material-symbols-outlined profile-chip-caret">expand_more</span>
+                    </button>
+                    <div class="admin-profile-dropdown" data-profile-dropdown aria-hidden="true">
+                        <button type="button" class="profile-dropdown-item" data-section-trigger="profile">
+                            <span class="material-symbols-outlined">account_circle</span>
+                            Profile Settings
+                        </button>
+                        <a href="{{ url_for('menu') }}" class="profile-dropdown-item">
+                            <span class="material-symbols-outlined">launch</span>
+                            View Site
+                        </a>
+                        <a href="{{ url_for('admin_logout') }}" class="profile-dropdown-item">
+                            <span class="material-symbols-outlined">logout</span>
+                            Sign Out
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        {% if new_order_alert %}
+        <div class="admin-alert admin-alert-inline">
+            <span class="material-symbols-outlined">new_releases</span>
+            <div>
+                <strong>New order received</strong>
+                <p>Check the Orders workspace to review details.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <section class="admin-section" data-section="overview">
+            <div class="admin-hero">
+                <div class="admin-hero-text">
+                    <div class="admin-hero-label">Welcome back</div>
+                    <h2>{{ profile.name or admin_email.split('@')[0] }}</h2>
+                    <p>Here's your latest snapshot of TastyCorner—where every bite tells a story!</p>
+                    <div class="admin-hero-stats">
+                        <div class="hero-stat">
+                            <span class="hero-stat-label">Top Category</span>
+                            <span class="hero-stat-value">{{ top_category }}</span>
+                        </div>
+                        <div class="hero-stat">
+                            <span class="hero-stat-label">Avg Order Value</span>
+                            <span class="hero-stat-value">${{ '%.2f'|format(average_order_value) }}</span>
+                        </div>
+                        <div class="hero-stat">
+                            <span class="hero-stat-label">Avg Tip</span>
+                            <span class="hero-stat-value">${{ '%.2f'|format(average_tip) }}</span>
+                        </div>
+                        <div class="hero-stat">
+                            <span class="hero-stat-label">Busiest Hour</span>
+                            <span class="hero-stat-value">{{ busiest_hour }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="admin-hero-graphic">
+                    <span class="material-symbols-outlined">insights</span>
+                </div>
+            </div>
+            <div class="admin-stats-grid">
+                {{ cmp.stat_card('inventory_2', 'Total Orders', total_orders, pending_orders ~ ' pending right now', 'stat-orders') }}
+                {{ cmp.stat_card('payments', 'Total Revenue', '$' ~ '%.2f'|format(total_revenue), 'Avg order $' ~ '%.2f'|format(average_order_value), 'stat-revenue') }}
+                {{ cmp.stat_card('task_alt', 'Completed Orders', completed_orders, 'Tips avg $' ~ '%.2f'|format(average_tip), 'stat-completed') }}
+            </div>
+            <div class="admin-quick-actions">
+                <button class="quick-action" data-target="menu">
+                    <span class="material-symbols-outlined">note_add</span>
+                    <div>
+                        <strong>Add Menu Item</strong>
+                        <span class="quick-action-hint">Create and publish a new dish</span>
+                    </div>
+                </button>
+                <button class="quick-action" data-target="orders">
+                    <span class="material-symbols-outlined">inventory_2</span>
+                    <div>
+                        <strong>Review Orders</strong>
+                        <span class="quick-action-hint">Track status and fulfill</span>
+                    </div>
+                </button>
+                <button class="quick-action" data-target="analytics">
+                    <span class="material-symbols-outlined">monitoring</span>
+                    <div>
+                        <strong>View Analytics</strong>
+                        <span class="quick-action-hint">Charts and performance metrics</span>
+                    </div>
+                </button>
+                <button class="quick-action" data-target="categories">
+                    <span class="material-symbols-outlined">folder</span>
+                    <div>
+                        <strong>Manage Categories</strong>
+                        <span class="quick-action-hint">Organize the menu structure</span>
+                    </div>
+                </button>
+                <button class="quick-action" data-target="profile">
+                    <span class="material-symbols-outlined">person_edit</span>
+                    <div>
+                        <strong>Edit Profile</strong>
+                        <span class="quick-action-hint">Update contact details</span>
+                    </div>
+                </button>
+                <button class="quick-action" data-target="activity">
+                    <span class="material-symbols-outlined">updates</span>
+                    <div>
+                        <strong>Recent Activity</strong>
+                        <span class="quick-action-hint">Latest workflow events</span>
+                    </div>
+                </button>
+            </div>
+        </section>
+
+        <section class="admin-section hidden" data-section="menu">
+            <div class="menu-section-header">
+                <div class="menu-section-title">
+                    <span class="material-symbols-outlined">restaurant_menu</span>
+                    <div>
+                        <h2>Menu Management</h2>
+                        <p>Craft new dishes, organize categories, and curate a vibrant dining experience.</p>
+                    </div>
+                </div>
+                <div class="menu-metrics">
+                    <div class="menu-metric-pill">
+                        <span>Menu Items</span>
+                        <strong>{{ menu_items|length if menu_items else 0 }}</strong>
+                    </div>
+                    <div class="menu-metric-pill">
+                        <span>Categories</span>
+                        <strong>{{ all_categories|length if all_categories else 0 }}</strong>
+                    </div>
+                </div>
+            </div>
+            {% set menu_count = menu_items|length if menu_items else 0 %}
+            {% if menu_count %}
+            {% set sorted_menu_items = menu_items|sort(attribute='price') %}
+            {% set highest_item = sorted_menu_items|last %}
+            {% set lowest_item = sorted_menu_items|first %}
+            {% set average_price = (menu_items|sum(attribute='price')) / menu_count %}
+            {% endif %}
+            <div class="menu-management-layout">
+                <div class="menu-side-column">
+                    <div class="admin-card admin-add-menu" id="add-menu">
+                        <h2>
+                            <span class="material-symbols-outlined">note_add</span>
+                            Add New Menu Item
+                        </h2>
+                        <p class="admin-card-subtitle">Keep the menu fresh by introducing new dishes.</p>
+                        <form method="POST" action="{{ url_for('admin_menu_add') }}" class="admin-form" enctype="multipart/form-data">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="menu-name">Name</label>
+                                    <input type="text" id="menu-name" name="name" placeholder="e.g. Cajun Shrimp Pasta" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="menu-price">Price ($)</label>
+                                    <input type="number" step="0.01" min="0" id="menu-price" name="price" placeholder="14.99" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="menu-category-select">Category</label>
+                                    <select id="menu-category-select" name="category_select">
+                                        <option value="">Select category</option>
+                                        {% for category in all_categories %}
+                                        <option value="{{ category }}">{{ category }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="menu-new-category">New category (optional)</label>
+                                    <input type="text" id="menu-new-category" name="new_category" placeholder="e.g. Seasonal Specials">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="menu-image">Upload image</label>
+                                    <input type="file" id="menu-image" name="image_file" accept="image/*">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="menu-description">Description</label>
+                                <textarea id="menu-description" name="description" rows="3" placeholder="Describe the dish" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Item</button>
+                        </form>
+                    </div>
+                    <div class="admin-card menu-analytics-card">
+                        <h3>Menu Insights</h3>
+                        <div class="menu-analytics-grid">
+                            <div class="menu-analytics-item">
+                                <span class="analytics-label">Average Price</span>
+                                <strong class="analytics-value">
+                                    {% if menu_count %}
+                                    ${{ average_price|round(2) }}
+                                    {% else %}
+                                    —
+                                    {% endif %}
+                                </strong>
+                                <span class="analytics-hint">Across all active dishes</span>
+                            </div>
+                            <div class="menu-analytics-item">
+                                <span class="analytics-label">Highest Priced</span>
+                                <strong class="analytics-value">
+                                    {% if menu_count %}
+                                    {{ highest_item.name }} <span>${{ '%.2f'|format(highest_item.price) }}</span>
+                                    {% else %}
+                                    —
+                                    {% endif %}
+                                </strong>
+                                <span class="analytics-hint">Premium dish to highlight</span>
+                            </div>
+                            <div class="menu-analytics-item">
+                                <span class="analytics-label">Signature Category</span>
+                                <strong class="analytics-value">
+                                    {% if top_category %}
+                                    {{ top_category }}
+                                    {% else %}
+                                    —
+                                    {% endif %}
+                                </strong>
+                                <span class="analytics-hint">Best performing section today</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-card admin-menu-list" id="menu-list">
+                    <div class="menu-list-header">
+                        <h2>
+                            <span class="material-symbols-outlined">list_alt</span>
+                            Current Menu Items
+                        </h2>
+                        <p class="admin-card-subtitle">Edit pricing, descriptions, or remove dishes instantly.</p>
+                    </div>
+                    <div class="menu-bulk-toolbar" {% if not menu_items %}hidden{% endif %}>
+                        <label class="bulk-select">
+                            <input type="checkbox" id="bulk-select-all">
+                            Select all
+                        </label>
+                        <div class="bulk-actions">
+                            <span class="bulk-count" data-bulk-count>0 selected</span>
+                            <button type="button" class="btn btn-secondary btn-sm" id="bulk-clear" disabled>Clear</button>
+                            <button type="button" class="btn btn-danger btn-sm" id="bulk-delete" disabled>Delete Selected</button>
+                        </div>
+                    </div>
+                    {% if menu_items %}
+                    <div class="admin-menu-items">
+                        {% for item in menu_items %}
+                        <details class="admin-menu-item" {% if loop.index0 < 2 %}open{% endif %}>
+                            <summary>
+                                <div class="menu-summary-row">
+                                    <input type="checkbox"
+                                           class="menu-bulk-checkbox"
+                                           value="{{ item.item_id }}"
+                                           data-delete-url="{{ url_for('admin_menu_delete', item_id=item.item_id) }}"
+                                           data-item-name="{{ item.name }}">
+                                    <div class="menu-item-header">
+                                        <div>
+                                            <h3>{{ item.name }}</h3>
+                                            <span class="menu-item-category">
+                                                <span class="material-symbols-outlined">tag</span>
+                                                {{ item.category }}
+                                            </span>
+                                        </div>
+                                        <div class="summary-price">${{ '%.2f'|format(item.price) }}</div>
+                                    </div>
+                                </div>
+                            </summary>
+                            <div class="admin-menu-item-body">
+                                <form method="POST" action="{{ url_for('admin_menu_update', item_id=item.item_id) }}" class="admin-menu-form" enctype="multipart/form-data">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>Name</label>
+                                            <input type="text" name="name" value="{{ item.name }}" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Price ($)</label>
+                                            <input type="number" step="0.01" min="0" name="price" value="{{ '%.2f'|format(item.price) }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>Category</label>
+                                            <select name="category_select">
+                                                <option value="">Select category</option>
+                                                {% for category in all_categories %}
+                                                <option value="{{ category }}" {% if category == item.category %}selected{% endif %}>{{ category }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>New category (optional)</label>
+                                            <input type="text" name="new_category" placeholder="Add new category">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>Description</label>
+                                            <textarea name="description" rows="2" required>{{ item.description }}</textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Upload new image (optional)</label>
+                                            <input type="file" name="image_file" accept="image/*">
+                                            {% if item.image %}
+                                            <div class="image-preview">
+                                                <img src="{{ url_for('static', filename='images/' + item.image) }}" alt="{{ item.name }}">
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="admin-actions">
+                                        <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
+                                    </div>
+                                </form>
+                                <form method="POST" action="{{ url_for('admin_menu_delete', item_id=item.item_id) }}" class="admin-delete-form" onsubmit="return confirm('Delete {{ item.name }}?');">
+                                    <button type="submit" class="btn btn-secondary btn-sm">Delete</button>
+                                </form>
+                            </div>
+                        </details>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="menu-empty-state">
+                        <span class="material-symbols-outlined">menu_book</span>
+                        <p>No menu items found.</p>
+                        <span class="menu-empty-hint">Use the form on the left to add your first signature dish.</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-section hidden" data-section="orders">
+            <div class="admin-card admin-orders" id="orders">
+                <div class="admin-orders-header">
+                    <div>
+                        <h2>Orders</h2>
+                        <p class="admin-card-subtitle">Search, filter, and monitor order progress.</p>
+                    </div>
+                    <form method="GET" action="{{ url_for('admin') }}" class="order-filters">
+                        <input type="hidden" name="section" value="orders">
+                        <input type="hidden" name="menu_search" value="{{ menu_search }}">
+                        <input type="hidden" name="menu_category" value="{{ menu_category }}">
+                        <div class="form-group">
+                            <input type="text" name="order_search" placeholder="Search by order, customer, or date" value="{{ order_search }}">
+                        </div>
+                        <div class="form-group">
+                            <select name="order_status">
+                                <option value="">All statuses</option>
+                                {% for status in status_options %}
+                                <option value="{{ status }}" {% if status == order_status %}selected{% endif %}>{{ status.replace('_', ' ')|title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+                        {% if order_search or order_status %}
+                        <a href="{{ url_for('admin', section='orders') }}" class="btn btn-secondary btn-sm">Clear</a>
+                        {% endif %}
+                    </form>
+                </div>
+                {% if orders_display %}
+                <div class="admin-orders-list">
+                    {% for order in orders_display[:8] %}
+                    <div class="admin-order-card" data-created-at="{{ order.created_at }}" data-status="{{ order.status }}">
+                        <div class="order-card-top">
+                            <div>
+                                <h3>Order #{{ order.order_id }}</h3>
+                                <p class="order-meta">Placed: {{ order.created_at }} | Customer: {{ order.customer_name }} (ID {{ order.user_id }})</p>
+                            </div>
+                            <div class="order-total">
+                                <span>Total</span>
+                                <strong>${{ order.total }}</strong>
+                            </div>
+                            <div class="order-age-pill" data-order-age>—</div>
+                        </div>
+                        <div class="order-items">
+                            {% for item in order['items'] %}
+                            <span class="order-item-pill">{{ item.name }} x{{ item.quantity }}</span>
+                            {% endfor %}
+                        </div>
+                        {% if order['allergies'] %}
+                        <div class="order-allergies admin-order-allergies">
+                            <strong>Allergies:</strong>
+                            {% for allergy in order['allergies'] %}
+                            <span class="allergy-badge">{{ allergy }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <form method="POST" action="{{ url_for('admin_update_order', order_id=order.order_id|int) }}" class="order-status-form">
+                            <label>Status</label>
+                            <select name="status" class="status-select">
+                                {% for status in status_options %}
+                                <option value="{{ status }}" {% if order.status == status %}selected{% endif %}>{{ status.replace('_', ' ')|title }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if orders_display|length > 8 %}
+                <div class="orders-more">Showing latest 8 of {{ orders_display|length }} filtered orders</div>
+                {% endif %}
+                {% else %}
+                <p>No orders found.</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="admin-section hidden" data-section="employees">
+            <div class="employees-section-header">
+                <div>
+                    <h2>Team Directory</h2>
+                    <p class="admin-card-subtitle">Add employees to the SQL directory and keep contact info in one place.</p>
+                </div>
+                <div class="employee-stat-pills">
+                    <div class="employee-stat-pill">
+                        <span>Total Employees</span>
+                        <strong>{{ employee_count }}</strong>
+                    </div>
+                    <div class="employee-stat-pill">
+                        <span>Latest Hire</span>
+                        {% if latest_employee %}
+                        <strong>{{ latest_employee.first_name }} {{ latest_employee.last_name }}</strong>
+                        <small>ID {{ latest_employee.employee_id }}</small>
+                        {% else %}
+                        <strong>—</strong>
+                        {% endif %}
+                    </div>
+                    <div class="employee-stat-pill">
+                        <span>Profiles Complete</span>
+                        <strong>{{ completion_rate }}%</strong>
+                        <small>Phone + address captured</small>
+                    </div>
+                </div>
+            </div>
+            <div class="employee-header-actions">
+                <a href="#add-employee-form" class="btn btn-primary btn-sm" data-employee-panel-trigger="manage">
+                    <span class="material-symbols-outlined">person_add</span>
+                    Add Team Member
+                </a>
+                <button type="button" class="btn btn-secondary btn-sm" data-compact-toggle>
+                    <span class="material-symbols-outlined" data-compact-icon>view_list</span>
+                    <span data-compact-label>Compact Rows</span>
+                </button>
+                <a href="{{ url_for('admin_export_employees') }}" class="btn btn-secondary btn-sm">
+                    <span class="material-symbols-outlined">picture_as_pdf</span>
+                    Download PDF
+                </a>
+            </div>
+            <div class="employee-hero">
+                <div class="employee-hero-main">
+                    <p class="employee-hero-eyebrow">People Ops Pulse</p>
+                    <h3>Keeping {{ employee_count }} team members thriving</h3>
+                    <p class="employee-hero-subtitle">Profile completeness is at {{ completion_rate }}% with {{ active_count }} active teammates ready to serve guests.</p>
+                    <div class="employee-hero-stats">
+                        <div class="pulse-stat">
+                            <span>Active</span>
+                            <strong>{{ active_count }}</strong>
+                        </div>
+                        <div class="pulse-stat">
+                            <span>Suspended</span>
+                            <strong>{{ suspended_count }}</strong>
+                        </div>
+                        <div class="pulse-stat">
+                            <span>New This Week</span>
+                            <strong>{{ recent_employees|length }}</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="employee-hero-avatars">
+                    {% set visible_recent = recent_employees[:5] %}
+                    {% if visible_recent %}
+                        {% for employee in visible_recent %}
+                        <div class="avatar-pill" title="{{ employee.first_name }} {{ employee.last_name }}">
+                            {{ (employee.first_name[:1] ~ employee.last_name[:1]) if employee.first_name and employee.last_name else 'HR' }}
+                        </div>
+                        {% endfor %}
+                        {% if employee_count > visible_recent|length %}
+                        <div class="avatar-pill avatar-count">+{{ employee_count - visible_recent|length }}</div>
+                        {% endif %}
+                    {% else %}
+                    <div class="avatar-pill avatar-empty">Add your first hire</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="employee-highlight-grid">
+                <div class="employee-highlight-card">
+                    <div class="highlight-heading">
+                        <span class="material-symbols-outlined">task_alt</span>
+                        <div>
+                            <h4>Profile Completeness</h4>
+                            <p>Phone + address on record</p>
+                        </div>
+                    </div>
+                    <div class="highlight-value">{{ completion_rate }}%</div>
+                    <div class="highlight-bar">
+                        <span style="width: {{ completion_rate }}%;"></span>
+                    </div>
+                </div>
+                <div class="employee-highlight-card">
+                    <div class="highlight-heading">
+                        <span class="material-symbols-outlined">group</span>
+                        <div>
+                            <h4>Team Composition</h4>
+                            <p>Gender mix across staff</p>
+                        </div>
+                    </div>
+                    <ul class="highlight-list">
+                        {% if gender_counts %}
+                        {% for label, count in gender_counts.items() %}
+                        <li><strong>{{ count }}</strong> {{ label }}</li>
+                        {% endfor %}
+                        {% else %}
+                        <li>No gender data yet.</li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="employee-highlight-card">
+                    <div class="highlight-heading">
+                        <span class="material-symbols-outlined">workspace_premium</span>
+                        <div>
+                            <h4>Top Roles</h4>
+                            <p>Most common positions</p>
+                        </div>
+                    </div>
+                    <ul class="highlight-list">
+                        {% if top_roles %}
+                        {% for role, count in top_roles %}
+                        <li><strong>{{ count }}</strong> {{ role }}</li>
+                        {% endfor %}
+                        {% else %}
+                        <li>Add job titles to see insights.</li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="employee-highlight-card">
+                    <div class="highlight-heading">
+                        <span class="material-symbols-outlined">verified_user</span>
+                        <div>
+                            <h4>Workforce Status</h4>
+                            <p>Active vs suspended</p>
+                        </div>
+                    </div>
+                    <div class="status-ratio">
+                        <strong>{{ active_count }}</strong> active
+                        <span>/</span>
+                        <strong>{{ suspended_count }}</strong> suspended
+                    </div>
+                    <div class="highlight-bar">
+                        {% set active_percent = 0 %}
+                        {% if employee_count %}
+                        {% set active_percent = (active_count / employee_count * 100) | round(1) %}
+                        {% endif %}
+                        <span style="width: {{ active_percent }}%;"></span>
+                    </div>
+                </div>
+                <div class="employee-highlight-card">
+                    <div class="highlight-heading">
+                        <span class="material-symbols-outlined">verified_user</span>
+                        <div>
+                            <h4>Workforce Status</h4>
+                            <p>Active vs suspended</p>
+                        </div>
+                    </div>
+                    <div class="status-ratio">
+                        <strong>{{ active_count }}</strong> active
+                        <span>/</span>
+                        <strong>{{ suspended_count }}</strong> suspended
+                    </div>
+                    <div class="highlight-bar">
+                        {% set active_percent = 0 %}
+                        {% if employee_count %}
+                        {% set active_percent = (active_count / employee_count * 100) | round(1) %}
+                        {% endif %}
+                        <span style="width: {{ active_percent }}%;"></span>
+                    </div>
+                </div>
+            </div>
+            {% if top_roles %}
+            <div class="employee-role-cloud">
+                {% for role, count in top_roles %}
+                <span class="role-chip">
+                    <span>{{ role }}</span>
+                    <small>{{ count }}</small>
+                </span>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <div class="employee-tips-grid">
+                <div class="tips-card">
+                    <div class="tips-icon">
+                        <span class="material-symbols-outlined">emoji_people</span>
+                    </div>
+                    <div>
+                        <h4>Greet new staff</h4>
+                        <p>Use the card view to jot first-day notes and welcome messages.</p>
+                    </div>
+                </div>
+                <div class="tips-card">
+                    <div class="tips-icon">
+                        <span class="material-symbols-outlined">checklist_rtl</span>
+                    </div>
+                    <div>
+                        <h4>Keep data fresh</h4>
+                        <p>Edit right inside the table to stay on top of phone numbers or roles.</p>
+                    </div>
+                </div>
+                <div class="tips-card">
+                    <div class="tips-icon">
+                        <span class="material-symbols-outlined">celebration</span>
+                    </div>
+                    <div>
+                        <h4>Celebrate milestones</h4>
+                        <p>Filter by status to spotlight active stars needing recognition.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="employee-subnav">
+                <button type="button" class="employee-subnav-btn active" data-employee-panel-trigger="directory">
+                    <span class="material-symbols-outlined">view_module</span>
+                    Directory
+                </button>
+                <button type="button" class="employee-subnav-btn" data-employee-panel-trigger="manage">
+                    <span class="material-symbols-outlined">edit_calendar</span>
+                    Manage Team
+                </button>
+            </div>
+            <div class="employee-status-filters">
+                {% set status_links = [
+                    ('', 'All', employee_count),
+                    ('active', 'Active', active_count),
+                    ('suspended', 'Suspended', suspended_count)
+                ] %}
+                {% for value, label, count in status_links %}
+                <a href="{{ url_for('admin', section='employees', employee_status=value or None, employee_search=employee_search or None) }}"
+                   class="status-filter {% if (employee_status_filter or '') == value %}active{% endif %}">
+                    {{ label }} <span>{{ count }}</span>
+                </a>
+                {% endfor %}
+            </div>
+            <div class="employee-panel" data-employee-panel="directory">
+            {% if employees %}
+            <div class="employee-card-grid">
+                {% for employee in employees[:6] %}
+                <details class="employee-card" {% if loop.index0 < 1 %}open{% endif %}>
+                    <summary>
+                        <div class="employee-card-header">
+                            <div class="employee-avatar" aria-hidden="true">
+                                {% if employee.profile_picture %}
+                                    <img src="{{ url_for('static', filename='images/' + employee.profile_picture) }}" alt="{{ employee.first_name }} {{ employee.last_name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <div style="display: none;">{{ (employee.first_name[:1] ~ employee.last_name[:1]) if employee.first_name and employee.last_name else 'EM' }}</div>
+                                {% else %}
+                                    {{ (employee.first_name[:1] ~ employee.last_name[:1]) if employee.first_name and employee.last_name else 'EM' }}
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h4>{{ employee.first_name }} {{ employee.last_name }}</h4>
+                                <p>{{ employee.job_title or 'Role pending' }}</p>
+                            </div>
+                        </div>
+                        <div class="employee-meta">
+                            <span class="employee-id-chip">ID {{ employee.employee_id }}</span>
+                            <span class="employee-created">Joined {{ employee.created_at }}</span>
+                            <span class="employee-status-badge status-{{ (employee.status or 'active') }}">{{ (employee.status or 'active')|replace('_', ' ')|title }}</span>
+                        </div>
+                    </summary>
+                    <div class="employee-card-details">
+                        <div class="detail-block">
+                            <span class="detail-label">Contact</span>
+                            <p>{{ employee.email }}<br>{{ employee.mobile or 'No mobile set' }}</p>
+                        </div>
+                        <div class="detail-block">
+                            <span class="detail-label">Location</span>
+                            <p>{{ employee.address or 'Address missing' }}</p>
+                        </div>
+                        <div class="detail-block">
+                            <span class="detail-label">Gender / DOB</span>
+                            <p>{{ employee.gender or 'Not set' }}<br>{{ employee.dob or 'DOB not captured' }}</p>
+                        </div>
+                        <div class="detail-block">
+                            <span class="detail-label">Notes</span>
+                            <p>{{ employee.notes or 'Add notes to track certifications, shift preferences, etc.' }}</p>
+                        </div>
+                        <div class="detail-block detail-actions">
+                            <span class="detail-label">Quick Actions</span>
+                            <div class="detail-actions-grid">
+                                <form method="POST" action="{{ url_for('admin_update_employee_status', employee_id=employee.employee_id) }}">
+                                    {% if (employee.status or 'active') == 'suspended' %}
+                                    <input type="hidden" name="status" value="active">
+                                    <button type="submit" class="btn btn-success-outline btn-sm">Activate</button>
+                                    {% else %}
+                                    <input type="hidden" name="status" value="suspended">
+                                    <button type="submit" class="btn btn-warning-outline btn-sm">Suspend</button>
+                                    {% endif %}
+                                </form>
+                                <form method="POST" action="{{ url_for('admin_delete_employee', employee_id=employee.employee_id) }}" onsubmit="return confirm('Delete employee {{ employee.first_name }} {{ employee.last_name }}?');">
+                                    <button type="submit" class="btn btn-danger-outline btn-sm">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <div class="admin-card employee-directory-card">
+                <div class="employee-directory-header">
+                    <div>
+                        <h3>Employee Directory</h3>
+                        <p class="admin-card-subtitle">Search by name, email, phone, or ID.</p>
+                    </div>
+                    <form method="GET" action="{{ url_for('admin') }}" class="employee-search-form">
+                        <input type="hidden" name="section" value="employees">
+                        <input type="hidden" name="employee_status" value="{{ employee_status_filter }}">
+                        <div class="form-group">
+                            <input type="text" name="employee_search" placeholder="Search employees" value="{{ employee_search }}">
+                        </div>
+                        <button type="submit" class="btn btn-secondary btn-sm">Search</button>
+                        {% if employee_search %}
+                        <a href="{{ url_for('admin', section='employees') }}" class="btn btn-secondary btn-sm">Clear</a>
+                        {% endif %}
+                    </form>
+                </div>
+                {% if employees %}
+                <div class="employee-directory-meta">
+                    <span class="result-pill">{{ employees|length }} {{ 'result' if employees|length == 1 else 'results' }}</span>
+                    {% if employee_status_filter %}
+                    <span class="result-pill filter-pill">Status: {{ employee_status_filter|replace('_', ' ')|title }}</span>
+                    {% endif %}
+                    {% if employee_search %}
+                    <span class="result-pill filter-pill">Search: “{{ employee_search }}”</span>
+                    {% endif %}
+                </div>
+                <div class="employee-table-wrapper">
+                    <table class="employee-table" data-employee-table>
+                        <thead>
+                            <tr>
+                                <th>Name / ID</th>
+                                <th>Role</th>
+                                <th>Contact</th>
+                                <th>Gender</th>
+                                <th>DOB</th>
+                                <th>Address</th>
+                                <th>Notes</th>
+                                <th>Status</th>
+                                <th>Added</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for employee in employees %}
+                            <tr>
+                                <td>
+                                    <div class="employee-name">
+                                        <div class="employee-name-with-avatar">
+                                            {% if employee.profile_picture %}
+                                                <div class="employee-table-avatar">
+                                                    <img src="{{ url_for('static', filename='images/' + employee.profile_picture) }}" alt="{{ employee.first_name }} {{ employee.last_name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                    <div style="display: none;">{{ (employee.first_name[:1] ~ employee.last_name[:1]) if employee.first_name and employee.last_name else 'EM' }}</div>
+                                                </div>
+                                            {% else %}
+                                                <div class="employee-table-avatar">
+                                                    {{ (employee.first_name[:1] ~ employee.last_name[:1]) if employee.first_name and employee.last_name else 'EM' }}
+                                                </div>
+                                            {% endif %}
+                                            <div class="employee-name-text">
+                                                <strong>{{ employee.first_name }} {{ employee.last_name }}</strong>
+                                                <span class="employee-id">ID {{ employee.employee_id }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ employee.job_title or '—' }}</td>
+                                <td>
+                                    <div class="employee-contact">
+                                        <span>{{ employee.email }}</span>
+                                        <span>{{ employee.mobile or '—' }}</span>
+                                    </div>
+                                </td>
+                                <td>{{ employee.gender or '—' }}</td>
+                                <td>{{ employee.dob or '—' }}</td>
+                                <td>{{ employee.address or '—' }}</td>
+                                <td class="employee-notes-cell">{{ employee.notes or '—' }}</td>
+                                <td>
+                                    <span class="employee-status-badge status-{{ (employee.status or 'active') }}">{{ (employee.status or 'active')|replace('_', ' ')|title }}</span>
+                                </td>
+                                <td>{{ employee.created_at }}</td>
+                                <td class="employee-actions">
+                                    <details class="schedule-edit-panel" style="margin-bottom: 0.5rem;">
+                                        <summary style="cursor: pointer; padding: 0.5rem 0.75rem; background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; border-radius: 6px; font-weight: 600; font-size: 0.85rem; border: none; list-style: none;">
+                                            <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 0.5rem; font-size: 18px;">schedule</span>
+                                            Schedule
+                                        </summary>
+                                        <form method="POST" action="{{ url_for('admin_update_employee_schedule', employee_id=employee.employee_id) }}" class="schedule-form" style="margin-top: 0.5rem; padding: 1rem; background: #ffffff; border: 1px solid rgba(30, 64, 175, 0.2); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                            <div class="schedule-grid">
+                                                {% set days = [
+                                                    ('monday', 'Monday'),
+                                                    ('tuesday', 'Tuesday'),
+                                                    ('wednesday', 'Wednesday'),
+                                                    ('thursday', 'Thursday'),
+                                                    ('friday', 'Friday'),
+                                                    ('saturday', 'Saturday'),
+                                                    ('sunday', 'Sunday')
+                                                ] %}
+                                                {% for day_key, day_name in days %}
+                                                {% set day_schedule = employee.schedule.get(day_key, {'enabled': False, 'start': '09:00', 'end': '17:00'}) %}
+                                                <div class="schedule-day-row">
+                                                    <div class="schedule-day-header">
+                                                        <label class="schedule-day-checkbox">
+                                                            <input type="checkbox" name="{{ day_key }}_enabled" {% if day_schedule.enabled %}checked{% endif %}>
+                                                            <span>{{ day_name }}</span>
+                                                        </label>
+                                                    </div>
+                                                    <div class="schedule-day-times">
+                                                        <input type="time" name="{{ day_key }}_start" value="{{ day_schedule.start }}" class="schedule-time-input">
+                                                        <span>to</span>
+                                                        <input type="time" name="{{ day_key }}_end" value="{{ day_schedule.end }}" class="schedule-time-input">
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                            <button type="submit" class="btn btn-primary btn-sm" style="margin-top: 1rem;">Save Schedule</button>
+                                        </form>
+                                    </details>
+                                    <details class="employee-edit-panel">
+                                        <summary>
+                                            <span class="material-symbols-outlined">edit</span>
+                                            Edit
+                                        </summary>
+                                        <form method="POST" action="{{ url_for('admin_update_employee', employee_id=employee.employee_id) }}" class="employee-inline-form">
+                                            <div class="form-row">
+                                                <div class="form-group fancy-input">
+                                                    <span class="input-icon material-symbols-outlined">badge</span>
+                                                    <label>First Name</label>
+                                                    <input type="text" name="first_name" value="{{ employee.first_name or '' }}" required>
+                                                </div>
+                                                <div class="form-group fancy-input">
+                                                    <span class="input-icon material-symbols-outlined">badge</span>
+                                                    <label>Last Name</label>
+                                                    <input type="text" name="last_name" value="{{ employee.last_name or '' }}" required>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group fancy-input">
+                                                    <span class="input-icon material-symbols-outlined">mail</span>
+                                                    <label>Email</label>
+                                                    <input type="email" name="email" value="{{ employee.email or '' }}" required>
+                                                </div>
+                                                <div class="form-group fancy-input">
+                                                    <span class="input-icon material-symbols-outlined">call</span>
+                                                    <label>Mobile</label>
+                                                    <input type="text" name="mobile" value="{{ employee.mobile or '' }}">
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group fancy-input">
+                                                    <span class="input-icon material-symbols-outlined">wc</span>
+                                                    <label>Gender</label>
+                                                    <input type="text" name="gender" value="{{ employee.gender or '' }}">
+                                                </div>
+                                                <div class="form-group fancy-input">
+                                                    <span class="input-icon material-symbols-outlined">calendar_month</span>
+                                                    <label>DOB</label>
+                                                    <input type="date" name="dob" value="{{ employee.dob or '' }}">
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group fancy-input">
+                                                    <span class="input-icon material-symbols-outlined">workspace_premium</span>
+                                                    <label>Job Title</label>
+                                                    <select name="job_title">
+                                                        {% for role in job_categories %}
+                                                        <option value="{{ role }}" {% if (employee.job_title or '') == role %}selected{% endif %}>{{ role }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                                <div class="form-group fancy-input" id="employee-job-title-custom-wrap" style="display:none;">
+                                                    <span class="input-icon material-symbols-outlined">edit</span>
+                                                    <label for="employee-job-title-custom">Custom Job Title</label>
+                                                    <input type="text" id="employee-job-title-custom" name="job_title_custom" placeholder="Enter custom title">
+                                                </div>
+                                            </div>
+                                            <div class="form-group fancy-input">
+                                                    <span class="input-icon material-symbols-outlined">home_pin</span>
+                                                    <label>Address</label>
+                                                    <input type="text" name="address" value="{{ employee.address or '' }}">
+                                                </div>
+                                            <div class="form-group fancy-input fancy-textarea">
+                                                <span class="input-icon material-symbols-outlined">edit_note</span>
+                                                <label>Notes</label>
+                                                <textarea name="notes" rows="2">{{ employee.notes or '' }}</textarea>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
+                                        </form>
+                                    </details>
+                                    <form method="POST" action="{{ url_for('admin_update_employee_status', employee_id=employee.employee_id) }}">
+                                        {% if (employee.status or 'active') == 'suspended' %}
+                                        <input type="hidden" name="status" value="active">
+                                        <button type="submit" class="btn btn-success-outline btn-xs" title="Activate employee">
+                                            <span class="material-symbols-outlined">play_arrow</span> Activate
+                                        </button>
+                                        {% else %}
+                                        <input type="hidden" name="status" value="suspended">
+                                        <button type="submit" class="btn btn-warning-outline btn-xs" title="Suspend employee">
+                                            <span class="material-symbols-outlined">pause_circle</span> Suspend
+                                        </button>
+                                        {% endif %}
+                                    </form>
+                                    <form method="POST" action="{{ url_for('admin_delete_employee', employee_id=employee.employee_id) }}" onsubmit="return confirm('Remove employee {{ employee.first_name }} {{ employee.last_name }} (ID {{ employee.employee_id }})?');">
+                                        <button type="submit" class="btn btn-danger-outline btn-xs" title="Delete employee">
+                                            <span class="material-symbols-outlined">delete</span> Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="menu-empty-state">
+                    <span class="material-symbols-outlined">group</span>
+                    <p>No employees found.</p>
+                    <span class="menu-empty-hint">Use the form below to add your first team member.</span>
+                </div>
+                {% endif %}
+            </div>
+            </div>
+            <div class="employee-panel hidden" data-employee-panel="manage">
+            <div class="menu-management-layout employee-management-layout">
+                <div class="menu-side-column">
+                    <div class="admin-card employee-form-card" id="add-employee-form">
+                        <h3>
+                            <span class="material-symbols-outlined">person_add</span>
+                            Add New Employee
+                        </h3>
+                        <p class="admin-card-subtitle">6-digit PINs are generated automatically (e.g., 123456).</p>
+                        <p class="form-hint">We’ll assign a unique PIN automatically after you hit save.</p>
+                        <form method="POST" action="{{ url_for('admin_add_employee') }}" class="admin-form">
+                            <div class="form-row">
+                                <div class="form-group fancy-input">
+                                    <span class="input-icon material-symbols-outlined">badge</span>
+                                    <label for="employee-first-name">First Name</label>
+                                    <input type="text" id="employee-first-name" name="first_name" placeholder="e.g. Jamie" required>
+                                </div>
+                                <div class="form-group fancy-input">
+                                    <span class="input-icon material-symbols-outlined">badge</span>
+                                    <label for="employee-last-name">Last Name</label>
+                                    <input type="text" id="employee-last-name" name="last_name" placeholder="e.g. Carter" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group fancy-input">
+                                    <span class="input-icon material-symbols-outlined">mail</span>
+                                    <label for="employee-email">Email</label>
+                                    <input type="email" id="employee-email" name="email" placeholder="name@company.com" required>
+                                </div>
+                                <div class="form-group fancy-input">
+                                    <span class="input-icon material-symbols-outlined">call</span>
+                                    <label for="employee-mobile">Mobile Number</label>
+                                    <input type="tel" id="employee-mobile" name="mobile" placeholder="+1 (555) 123-4567">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group fancy-input">
+                                    <span class="input-icon material-symbols-outlined">wc</span>
+                                    <label for="employee-gender">Gender</label>
+                                    <select id="employee-gender" name="gender">
+                                        <option value="">Prefer not to say</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Non-binary">Non-binary</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="form-group fancy-input">
+                                    <span class="input-icon material-symbols-outlined">calendar_month</span>
+                                    <label for="employee-dob">Date of Birth</label>
+                                    <input type="date" id="employee-dob" name="dob">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group fancy-input">
+                                    <span class="input-icon material-symbols-outlined">workspace_premium</span>
+                                    <label for="employee-job-title-select">Job Title</label>
+                                    <select id="employee-job-title-select" name="job_title">
+                                        {% for role in job_categories %}
+                                        <option value="{{ role }}">{{ role }}</option>
+                                        {% endfor %}
+                                        <option value="__custom__">Other / Custom…</option>
+                                    </select>
+                                </div>
+                                <div class="form-group fancy-input" id="employee-job-title-custom-wrap" style="display:none;">
+                                    <span class="input-icon material-symbols-outlined">edit</span>
+                                    <label for="employee-job-title-custom">Custom Job Title</label>
+                                    <input type="text" id="employee-job-title-custom" name="job_title_custom" placeholder="Enter custom title">
+                                </div>
+                            </div>
+                            <div class="form-group fancy-input">
+                                    <span class="input-icon material-symbols-outlined">home_pin</span>
+                                    <label for="employee-address">Address</label>
+                                    <input type="text" id="employee-address" name="address" placeholder="Street, City, State">
+                                </div>
+                            <div class="form-group fancy-input fancy-textarea">
+                                <span class="input-icon material-symbols-outlined">edit_note</span>
+                                <label for="employee-notes">Notes / Other Info</label>
+                                <textarea id="employee-notes" name="notes" rows="2" placeholder="Availability, certifications, etc."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Employee</button>
+                        </form>
+                    </div>
+                    <div class="admin-card employee-insights-card">
+                        <h3>Directory Insights</h3>
+                        <div class="employee-gender-breakdown">
+                            <span class="analytics-label">Gender Mix</span>
+                            <ul>
+                                {% if gender_counts %}
+                                {% for label, count in gender_counts.items() %}
+                                <li><strong>{{ count }}</strong> {{ label }}</li>
+                                {% endfor %}
+                                {% else %}
+                                <li>No data captured yet.</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        <div class="employee-recent-hires">
+                            <span class="analytics-label">Recent Hires</span>
+                            {% if recent_employees %}
+                            <ul>
+                                {% for employee in recent_employees %}
+                                <li>
+                                    <div>
+                                        <strong>{{ employee.first_name }} {{ employee.last_name }}</strong>
+                                        <span>ID {{ employee.employee_id }}</span>
+                                    </div>
+                                    <span class="hire-date">{{ employee.created_at }}</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p>No employees added yet.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+            </div>
+            </div>
+        </section>
+
+        <section class="admin-section hidden" data-section="attendance">
+            <div class="admin-card admin-attendance">
+                <div class="attendance-header">
+                    <div>
+                        <h2>Employee Attendance</h2>
+                        <p class="admin-card-subtitle">Monitor check-ins, check-outs, and hours worked.</p>
+                    </div>
+                    <form method="GET" action="{{ url_for('admin') }}" class="attendance-filters">
+                        <input type="hidden" name="section" value="attendance">
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" name="attendance_date" value="{{ attendance_date }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Employee</label>
+                            <select name="attendance_employee">
+                                <option value="">All Employees</option>
+                                {% for emp in employees %}
+                                <option value="{{ emp.employee_id }}" {% if attendance_employee == emp.employee_id %}selected{% endif %}>
+                                    {{ emp.first_name }} {{ emp.last_name }} ({{ emp.employee_id }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+                        {% if attendance_date != today or attendance_employee %}
+                        <a href="{{ url_for('admin', section='attendance') }}" class="btn btn-secondary btn-sm">Clear</a>
+                        {% endif %}
+                    </form>
+                </div>
+                
+                {% if attendance_date == today %}
+                <div class="today-attendance-summary">
+                    <h3>Today's Attendance ({{ today }})</h3>
+                    <div class="attendance-stats">
+                        <div class="attendance-stat">
+                            <span class="stat-label">Checked In</span>
+                            <span class="stat-value">{{ today_attendance|selectattr('check_in_time')|list|length }}</span>
+                        </div>
+                        <div class="attendance-stat">
+                            <span class="stat-label">Checked Out</span>
+                            <span class="stat-value">{{ today_attendance|selectattr('check_out_time')|list|length }}</span>
+                        </div>
+                        <div class="attendance-stat">
+                            <span class="stat-label">Total Hours</span>
+                            <span class="stat-value">{{ "%.2f"|format(today_attendance|sum(attribute='hours_worked')) }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="attendance-table-container">
+                    <table class="attendance-table">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Job Title</th>
+                                <th>Date</th>
+                                <th>Check In</th>
+                                <th>Check Out</th>
+                                <th>Hours Worked</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if attendance_records %}
+                                {% for record in attendance_records %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ record.first_name }} {{ record.last_name }}</strong>
+                                        <small>ID: {{ record.employee_id }}</small>
+                                    </td>
+                                    <td>{{ record.job_title or 'N/A' }}</td>
+                                    <td>{{ record.date }}</td>
+                                    <td>
+                                        {% if record.check_in_time %}
+                                            <span class="check-in-badge">{{ record.check_in_time.split(' ')[1] }}</span>
+                                        {% else %}
+                                            <span class="no-check">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if record.check_out_time %}
+                                            <span class="check-out-badge">{{ record.check_out_time.split(' ')[1] }}</span>
+                                        {% else %}
+                                            <span class="no-check">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if record.hours_worked %}
+                                            <strong class="hours-badge">{{ "%.2f"|format(record.hours_worked) }}h</strong>
+                                        {% else %}
+                                            <span class="no-check">—</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="no-attendance">
+                                        <p>No attendance records found for the selected criteria.</p>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-section hidden" data-section="payroll">
+            <div class="admin-card admin-payroll">
+                <div class="payroll-header">
+                    <div>
+                        <h2>Employee Payroll</h2>
+                        <p class="admin-card-subtitle">Manage bi-weekly payments and hourly rates. Default rate: ${{ "%.2f"|format(admin_settings.hourly_rate or 15.00) }}/hour</p>
+                    </div>
+                </div>
+                
+                <!-- Role-Based Hourly Rates Section -->
+                <div class="payroll-role-rates-section" style="margin-bottom: 2rem; padding: 1.5rem; background: #f8fafc; border-radius: 12px; border: 2px solid #e2e8f0;">
+                    <h3 style="margin-top: 0; margin-bottom: 1rem; font-size: 1.25rem; font-weight: 700; color: #1e293b;">
+                        <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 0.5rem;">groups</span>
+                        Role-Based Hourly Rates
+                    </h3>
+                    <p style="margin-bottom: 1.5rem; color: #64748b; font-size: 0.9rem;">Set hourly rates by role. All employees with a specific role will use this rate unless they have an individual rate set.</p>
+                    
+                    <form method="POST" action="{{ url_for('admin_bulk_update_role_rate') }}" style="margin-bottom: 1.5rem;">
+                        <div style="display: grid; grid-template-columns: 2fr 2fr 1fr auto; gap: 1rem; align-items: end;">
+                            <div>
+                                <label for="bulk-role-select" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #475569;">Role</label>
+                                <select id="bulk-role-select" name="role" required style="width: 100%; padding: 0.75rem; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem;">
+                                    <option value="">Select a role...</option>
+                                    {% for role in job_categories %}
+                                    <option value="{{ role }}">{{ role }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label for="bulk-hourly-rate" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #475569;">Hourly Rate ($)</label>
+                                <input type="number" id="bulk-hourly-rate" name="hourly_rate" step="0.01" min="0" required style="width: 100%; padding: 0.75rem; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem;" placeholder="20.00">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.9rem; color: #64748b;">
+                                    <input type="checkbox" name="clear_individual" style="width: 18px; height: 18px;">
+                                    Clear individual rates
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="white-space: nowrap;">
+                                <span class="material-symbols-outlined">save</span>
+                                Set Rate
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <!-- Display Current Role Rates -->
+                    <div style="margin-top: 1.5rem;">
+                        <h4 style="margin-bottom: 1rem; font-size: 1rem; font-weight: 600; color: #475569;">Current Role Rates</h4>
+                        {% if role_rates %}
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem;">
+                            {% for role, rate in role_rates.items() %}
+                            <div style="padding: 0.75rem 1rem; background: white; border-radius: 8px; border: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-weight: 600; color: #1e293b; font-size: 0.9rem;">{{ role }}</div>
+                                    <div style="font-size: 0.85rem; color: #64748b;">${{ "%.2f"|format(rate) }}/hr</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p style="color: #94a3b8; font-size: 0.9rem; font-style: italic;">No role rates set. Employees will use the default rate.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if payroll_employees %}
+                <form method="POST" action="{{ url_for('admin_mark_paid') }}" id="payroll-form" onsubmit="return confirm('Mark selected employees as paid? This will reset their hours to 0.');">
+                    <div class="payroll-actions">
+                        <div class="payroll-select-all">
+                            <label class="checkbox">
+                                <input type="checkbox" id="select-all-employees">
+                                <span>Select All</span>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <span class="material-symbols-outlined">payments</span>
+                            Mark Selected as Paid
+                        </button>
+                    </div>
+                    
+                    <div class="payroll-table-container">
+                        <table class="payroll-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;">
+                                        <input type="checkbox" id="select-all-checkbox">
+                                    </th>
+                                    <th>Employee</th>
+                                    <th>Job Title</th>
+                                    <th>Hourly Rate</th>
+                                    <th>Hours This Period</th>
+                                    <th>Earnings</th>
+                                    <th>Last Paid Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for emp in payroll_employees %}
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" name="employee_ids" value="{{ emp.employee_id }}" class="employee-checkbox">
+                                    </td>
+                                    <td>
+                                        <strong>{{ emp.first_name }} {{ emp.last_name }}</strong>
+                                        <small>ID: {{ emp.employee_id }}</small>
+                                    </td>
+                                    <td>{{ emp.job_title or 'N/A' }}</td>
+                                    <td>
+                                        <form method="POST" action="{{ url_for('admin_update_employee_rate') }}" style="display: inline-flex; gap: 0.5rem; align-items: center;" onsubmit="event.stopPropagation(); return true;">
+                                            <input type="hidden" name="employee_id" value="{{ emp.employee_id }}">
+                                            <input type="number" name="hourly_rate" step="0.01" min="0" value="{{ emp.hourly_rate if emp.hourly_rate else '' }}" placeholder="{{ "%.2f"|format(emp.effective_hourly_rate) }}" style="width: 80px; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;">
+                                            <button type="submit" class="btn btn-secondary-outline btn-xs" title="Save rate">
+                                                <span class="material-symbols-outlined" style="font-size: 1rem;">save</span>
+                                            </button>
+                                        </form>
+                                        <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">
+                                            {% if emp.hourly_rate %}
+                                                <span style="color: #10b981;">Individual: ${{ "%.2f"|format(emp.hourly_rate) }}</span>
+                                            {% elif emp.job_title and role_rates.get(emp.job_title) %}
+                                                <span style="color: #3b82f6;">Role: ${{ "%.2f"|format(role_rates[emp.job_title]) }}</span>
+                                            {% else %}
+                                                <span style="color: #94a3b8;">Default: ${{ "%.2f"|format(admin_settings.hourly_rate or 15.00) }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <strong class="hours-display">{{ (emp.hours_this_period or 0)|format_hours }}</strong>
+                                        <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 0.15rem;">({{ "%.2f"|format(emp.hours_this_period or 0) }}h)</div>
+                                    </td>
+                                    <td>
+                                        <strong class="earnings-display">${{ "%.2f"|format((emp.hours_this_period or 0) * emp.effective_hourly_rate) }}</strong>
+                                        <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 0.15rem;">
+                                            {{ "%.2f"|format(emp.hours_this_period or 0) }}h × ${{ "%.2f"|format(emp.effective_hourly_rate) }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if emp.last_paid_date %}
+                                            <span class="paid-date">{{ emp.last_paid_date }}</span>
+                                        {% else %}
+                                            <span class="never-paid">Never paid</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <form method="POST" action="{{ url_for('admin_mark_paid_single', employee_id=emp.employee_id) }}" style="display: inline;" onsubmit="return confirm('Mark {{ emp.first_name }} {{ emp.last_name }} as paid? This will reset their hours to 0.');">
+                                            <button type="submit" class="btn btn-success-outline btn-xs">
+                                                <span class="material-symbols-outlined">check_circle</span>
+                                                Mark Paid
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
+                {% else %}
+                <div class="menu-empty-state">
+                    <span class="material-symbols-outlined">group</span>
+                    <p>No active employees found.</p>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="admin-section hidden" data-section="analytics">
+            <div class="admin-card admin-analytics">
+                <div class="analytics-header">
+                    <div>
+                        <h2>Sales Insights</h2>
+                        <p class="admin-card-subtitle">Visualize performance at a glance.</p>
+                    </div>
+                    <div class="analytics-actions">
+                        <button class="btn btn-secondary btn-sm" id="export-csv">Export CSV</button>
+                        <button class="btn btn-secondary btn-sm" id="export-pdf">Export PDF</button>
+                    </div>
+                </div>
+                <div class="analytics-tabs">
+                    <button class="analytics-tab active" data-chart="daily">Daily</button>
+                    <button class="analytics-tab" data-chart="weekly">Weekly</button>
+                    <button class="analytics-tab" data-chart="monthly">Monthly</button>
+                </div>
+                <div class="analytics-grid">
+                    {{ cmp.chart_card('Sales per Day', 'primarySalesChart', 'primary-chart-title') }}
+                    {{ cmp.chart_card('Top Menu Items', 'itemsChart') }}
+                    {{ cmp.chart_card('Customer Mix', 'customerChart') }}
+                    {{ cmp.chart_card('Orders by Status', 'statusChart') }}
+                    {{ cmp.chart_card('Revenue by Category', 'categoryChart') }}
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-section hidden" data-section="categories">
+            <div class="admin-card admin-categories">
+                <h2>Category Management</h2>
+                <p class="admin-card-subtitle">Organize menu categories and add new ones.</p>
+                <form method="POST" action="{{ url_for('admin_add_category') }}" class="category-form">
+                    <input type="text" name="category_name" placeholder="Add new category" required>
+                    <button type="submit" class="btn btn-secondary btn-sm">Add Category</button>
+                </form>
+                <div class="category-pills">
+                    {% for category in all_categories %}
+                    <span class="category-pill">{{ category }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-section hidden" data-section="settings">
+            <div class="admin-card admin-settings">
+                <h2>System Settings</h2>
+                <p class="admin-card-subtitle">Configure system-wide settings including payroll rates.</p>
+                <form method="POST" action="{{ url_for('admin_update_settings') }}" class="admin-form">
+                    <div class="form-group">
+                        <label for="hourly-rate">Minimum Hourly Rate ($)</label>
+                        <input type="number" id="hourly-rate" name="hourly_rate" step="0.01" min="0" value="{{ admin_settings.hourly_rate or 15.00 }}" required>
+                        <small class="form-hint">This is the minimum payment per hour for all employees. Employees will see this rate on their dashboard.</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="admin-section hidden" data-section="profile">
+            <div class="admin-card admin-profile">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <img src="{{ url_for('static', filename='images/' + profile.avatar) }}" alt="Admin Avatar" onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/hero-background.jpg') }}';">
+                    </div>
+                    <div>
+                        <h2>{{ profile.name }}</h2>
+                        <p>{{ profile.title }}</p>
+                    </div>
+                </div>
+                <form method="POST" action="{{ url_for('admin_update_profile') }}" class="admin-form" enctype="multipart/form-data">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="profile-name">Name</label>
+                            <input type="text" id="profile-name" name="name" value="{{ profile.name }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="profile-title">Title</label>
+                            <input type="text" id="profile-title" name="title" value="{{ profile.title }}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-bio">Bio</label>
+                        <textarea id="profile-bio" name="bio" rows="4">{{ profile.bio }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-avatar">Profile Photo</label>
+                        <input type="file" id="profile-avatar" name="avatar" accept="image/*">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Profile</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="admin-section hidden" data-section="activity">
+            <div class="admin-card admin-activity">
+                <h2>Recent Activity</h2>
+                <p class="admin-card-subtitle">Latest events, orders, and updates.</p>
+                {% set activity_statuses = recent_activity|map(attribute='status')|unique|list %}
+                {% if activity_statuses %}
+                <div class="activity-filters" role="tablist">
+                    <button type="button" class="activity-filter active" data-activity-filter="all">All</button>
+                    {% for status in activity_statuses %}
+                    <button type="button" class="activity-filter" data-activity-filter="{{ status }}">{{ status.replace('_', ' ')|title }}</button>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <div class="activity-timeline">
+                    {% for entry in recent_activity %}
+                    {{ cmp.timeline_item(entry.order_id, entry.status, entry.customer, entry.total, entry.created_at) }}
+                    {% endfor %}
+                    {% if recent_activity|length == 0 %}
+                    <p>No recent activity.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const salesChartData = {{ sales_chart|safe }};
+const weeklyChartData = {{ weekly_chart|safe }};
+const monthlyChartData = {{ monthly_chart|safe }};
+const topItemsChartData = {{ top_items_chart|safe }};
+const customerChartData = {{ customer_chart|safe }};
+const statusChartData = {{ status_chart|safe }};
+const categoryChartData = {{ category_chart|safe }};
+
+function renderPrimarySalesChart(type='daily') {
+    const chartMap = {
+        'daily': { data: salesChartData, title: 'Sales per Day' },
+        'weekly': { data: weeklyChartData, title: 'Sales per Week' },
+        'monthly': { data: monthlyChartData, title: 'Sales per Month' }
+    };
+    const chartInfo = chartMap[type];
+    if (!chartInfo || chartInfo.data.labels.length === 0) return;
+
+    const context = document.getElementById('primarySalesChart').getContext('2d');
+
+    if (window.primarySalesChartInstance) {
+        window.primarySalesChartInstance.destroy();
+    }
+
+    window.primarySalesChartInstance = new Chart(context, {
+        type: 'line',
+        data: {
+            labels: chartInfo.data.labels,
+            datasets: [{
+                label: 'Revenue ($)',
+                data: chartInfo.data.values,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                fill: true,
+                tension: 0.3,
+                borderWidth: 3
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { callback: value => '$' + value } }
+            }
+        }
+    });
+
+    document.getElementById('primary-chart-title').textContent = chartInfo.title;
+}
+
+function initCharts() {
+    renderPrimarySalesChart('daily');
+
+    if (topItemsChartData.labels.length > 0 && !window.itemsChartInstance) {
+        window.itemsChartInstance = new Chart(document.getElementById('itemsChart'), {
+            type: 'bar',
+            data: {
+                labels: topItemsChartData.labels,
+                datasets: [{
+                    label: 'Orders',
+                    data: topItemsChartData.values,
+                    backgroundColor: '#10b981'
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+    if ((customerChartData.values[0] || customerChartData.values[1]) && !window.customerChartInstance) {
+        window.customerChartInstance = new Chart(document.getElementById('customerChart'), {
+            type: 'doughnut',
+            data: {
+                labels: customerChartData.labels,
+                datasets: [{
+                    data: customerChartData.values,
+                    backgroundColor: ['#3b82f6', '#f59e0b']
+                }]
+            },
+            options: {
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+    if (statusChartData.labels.length > 0 && !window.statusChartInstance) {
+        window.statusChartInstance = new Chart(document.getElementById('statusChart'), {
+            type: 'bar',
+            data: {
+                labels: statusChartData.labels.map(s => s.replaceAll('_', ' ').replace(/\b\w/g, c => c.toUpperCase())),
+                datasets: [{
+                    label: 'Orders',
+                    data: statusChartData.values,
+                    backgroundColor: '#f97316'
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+    if (categoryChartData.labels.length > 0 && !window.categoryChartInstance) {
+        window.categoryChartInstance = new Chart(document.getElementById('categoryChart'), {
+            type: 'doughnut',
+            data: {
+                labels: categoryChartData.labels,
+                datasets: [{
+                    data: categoryChartData.values,
+                    backgroundColor: ['#6366f1', '#38bdf8', '#f97316', '#10b981', '#f43f5e', '#eab308']
+                }]
+            },
+            options: {
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+}
+
+function activateAnalyticsTab(type) {
+    document.querySelectorAll('.analytics-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.chart === type);
+    });
+    renderPrimarySalesChart(type);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const navButtons = document.querySelectorAll('.admin-nav-item');
+    const sections = document.querySelectorAll('.admin-section');
+    const analyticsTabs = document.querySelectorAll('.analytics-tab');
+    const initialSection = document.querySelector('.admin-content').dataset.initialSection || 'overview';
+    const profileMenu = document.querySelector('.admin-profile-menu');
+    const profileTrigger = profileMenu ? profileMenu.querySelector('[data-profile-trigger]') : null;
+    const profileDropdown = profileMenu ? profileMenu.querySelector('[data-profile-dropdown]') : null;
+
+    function showSection(sectionName) {
+        sections.forEach((section) => {
+            section.classList.toggle('hidden', section.dataset.section !== sectionName);
+        });
+        navButtons.forEach((btn) => {
+            btn.classList.toggle('active', btn.dataset.section === sectionName);
+        });
+        if (sectionName === 'analytics') {
+            initCharts();
+        }
+    }
+
+    const closeAllProfileMenus = () => {
+        document.querySelectorAll('.admin-profile-menu.open').forEach(menu => {
+            menu.classList.remove('open');
+            menu.querySelector('[data-profile-trigger]')?.setAttribute('aria-expanded', 'false');
+            menu.querySelector('[data-profile-dropdown]')?.setAttribute('aria-hidden', 'true');
+        });
+    };
+
+    if (profileTrigger && profileDropdown) {
+        profileTrigger.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            const willOpen = !profileMenu.classList.contains('open');
+
+            closeAllProfileMenus();
+
+            if (willOpen) {
+                profileMenu.classList.add('open');
+                profileTrigger.setAttribute('aria-expanded', 'true');
+                profileDropdown.setAttribute('aria-hidden', 'false');
+            } else {
+                profileMenu.classList.remove('open');
+                profileTrigger.setAttribute('aria-expanded', 'false');
+                profileDropdown.setAttribute('aria-hidden', 'true');
+            }
+        });
+
+        profileDropdown.addEventListener('click', (event) => {
+            event.stopPropagation();
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!profileMenu || !profileMenu.contains(event.target)) {
+                closeAllProfileMenus();
+            }
+        });
+
+        window.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeAllProfileMenus();
+            }
+        });
+    }
+
+    navButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            showSection(btn.dataset.section);
+            closeAllProfileMenus();
+        });
+    });
+
+    document.querySelectorAll('.quick-action').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            showSection(btn.dataset.target);
+            closeAllProfileMenus();
+        });
+    });
+
+    const sectionTriggers = document.querySelectorAll('[data-section-trigger]');
+    sectionTriggers.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            showSection(btn.dataset.sectionTrigger);
+            closeAllProfileMenus();
+        });
+    });
+
+    analyticsTabs.forEach((tab) => {
+        tab.addEventListener('click', () => activateAnalyticsTab(tab.dataset.chart));
+    });
+
+    const bulkToolbar = document.querySelector('.menu-bulk-toolbar');
+    const bulkCheckboxes = Array.from(document.querySelectorAll('.menu-bulk-checkbox'));
+    const bulkSelectAll = document.getElementById('bulk-select-all');
+    const bulkDeleteBtn = document.getElementById('bulk-delete');
+    const bulkClearBtn = document.getElementById('bulk-clear');
+    const bulkCountLabel = document.querySelector('[data-bulk-count]');
+
+    const getSelectedCheckboxes = () => bulkCheckboxes.filter(cb => cb.checked);
+
+    const updateBulkState = () => {
+        if (!bulkToolbar) return;
+        const selected = getSelectedCheckboxes();
+        const count = selected.length;
+        if (bulkCountLabel) {
+            bulkCountLabel.textContent = `${count} selected`;
+        }
+        if (bulkDeleteBtn) {
+            bulkDeleteBtn.disabled = count === 0;
+        }
+        if (bulkClearBtn) {
+            bulkClearBtn.disabled = count === 0;
+        }
+        if (bulkSelectAll) {
+            const total = bulkCheckboxes.length;
+            bulkSelectAll.checked = count > 0 && count === total;
+            bulkSelectAll.indeterminate = count > 0 && count < total;
+        }
+    };
+
+    if (bulkToolbar && bulkCheckboxes.length > 0) {
+        bulkCheckboxes.forEach((checkbox) => {
+            checkbox.addEventListener('click', (event) => event.stopPropagation());
+            checkbox.addEventListener('change', updateBulkState);
+        });
+        updateBulkState();
+    }
+
+    if (bulkSelectAll) {
+        bulkSelectAll.addEventListener('change', () => {
+            const checked = bulkSelectAll.checked;
+            bulkCheckboxes.forEach(cb => {
+                cb.checked = checked;
+            });
+            updateBulkState();
+        });
+    }
+
+    if (bulkClearBtn) {
+        bulkClearBtn.addEventListener('click', () => {
+            bulkCheckboxes.forEach(cb => {
+                cb.checked = false;
+            });
+            updateBulkState();
+        });
+    }
+
+    if (bulkDeleteBtn) {
+        const originalText = bulkDeleteBtn.textContent;
+        bulkDeleteBtn.addEventListener('click', async () => {
+            const selected = getSelectedCheckboxes();
+            if (!selected.length) {
+                return;
+            }
+            const confirmMessage = selected.length === 1
+                ? `Delete "${selected[0].dataset.itemName}"?`
+                : `Delete ${selected.length} selected menu items?`;
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+            bulkDeleteBtn.disabled = true;
+            bulkDeleteBtn.textContent = 'Deleting...';
+            try {
+                for (const checkbox of selected) {
+                    const deleteUrl = checkbox.dataset.deleteUrl;
+                    if (!deleteUrl) continue;
+                    const response = await fetch(deleteUrl, {
+                        method: 'POST',
+                        credentials: 'same-origin'
+                    });
+                    if (!response.ok) {
+                        throw new Error(`Failed to delete ${checkbox.dataset.itemName}`);
+                    }
+                }
+                window.location.reload();
+            } catch (error) {
+                console.error(error);
+                alert('Something went wrong while deleting menu items. Please try again.');
+                bulkDeleteBtn.disabled = false;
+                bulkDeleteBtn.textContent = originalText;
+                updateBulkState();
+            }
+        });
+    }
+
+    const orderCards = document.querySelectorAll('.admin-order-card[data-created-at]');
+    orderCards.forEach((card) => {
+        const rawCreatedAt = card.dataset.createdAt;
+        const status = (card.dataset.status || '').toLowerCase();
+        const badge = card.querySelector('[data-order-age]');
+        if (!rawCreatedAt || !badge) return;
+        let createdTimestamp = Date.parse(rawCreatedAt);
+        if (Number.isNaN(createdTimestamp) && rawCreatedAt.includes(' ')) {
+            createdTimestamp = Date.parse(rawCreatedAt.replace(' ', 'T'));
+        }
+        if (Number.isNaN(createdTimestamp)) return;
+        const minutes = Math.max(0, Math.round((Date.now() - createdTimestamp) / 60000));
+        if (minutes <= 1) {
+            badge.textContent = minutes === 0 ? 'Just now' : '1 min ago';
+        } else {
+            badge.textContent = `${minutes} min ago`;
+        }
+        const isCompleted = ['completed', 'delivered', 'closed'].includes(status);
+        if (!isCompleted) {
+            if (minutes >= 60) {
+                card.classList.add('sla-critical');
+            } else if (minutes >= 30) {
+                card.classList.add('sla-warning');
+            }
+        }
+    });
+
+    const activityFilters = document.querySelectorAll('.activity-filter');
+    const timelineItems = document.querySelectorAll('.activity-timeline .timeline-item');
+    if (activityFilters.length && timelineItems.length) {
+        activityFilters.forEach((filterButton) => {
+            filterButton.addEventListener('click', () => {
+                const selectedFilter = filterButton.dataset.activityFilter;
+                activityFilters.forEach(btn => btn.classList.toggle('active', btn === filterButton));
+                timelineItems.forEach(item => {
+                    const itemStatus = item.dataset.status;
+                    const matches = selectedFilter === 'all' || itemStatus === selectedFilter;
+                    item.classList.toggle('is-hidden', !matches);
+                });
+            });
+        });
+    }
+
+    const compactToggle = document.querySelector('[data-compact-toggle]');
+    const employeeTable = document.querySelector('[data-employee-table]');
+    if (compactToggle && employeeTable) {
+        compactToggle.addEventListener('click', () => {
+            const isCompact = employeeTable.classList.toggle('compact');
+            compactToggle.classList.toggle('active', isCompact);
+            const icon = compactToggle.querySelector('[data-compact-icon]');
+            const label = compactToggle.querySelector('[data-compact-label]');
+            if (icon) {
+                icon.textContent = isCompact ? 'table_rows' : 'view_list';
+            }
+            if (label) {
+                label.textContent = isCompact ? 'Expanded Rows' : 'Compact Rows';
+            }
+        });
+    }
+
+    const employeePanelButtons = document.querySelectorAll('[data-employee-panel-trigger]');
+    const employeePanels = document.querySelectorAll('[data-employee-panel]');
+
+    const showEmployeePanel = (target) => {
+        employeePanels.forEach(panel => panel.classList.toggle('hidden', panel.dataset.employeePanel !== target));
+        employeePanelButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.employeePanelTrigger === target));
+    };
+
+    employeePanelButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            showEmployeePanel(btn.dataset.employeePanelTrigger);
+        });
+    });
+
+    showEmployeePanel('directory');
+
+    // Deep link: Add Team Member button should open Manage panel and scroll to form
+    const addTeamLinks = document.querySelectorAll('a[href="#add-employee-form"]');
+    addTeamLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Ensure Employees workspace is active
+            showSection('employees');
+            // Switch to Manage panel
+            showEmployeePanel('manage');
+            // Smooth scroll to the form after layout updates
+            setTimeout(() => {
+                const formEl = document.getElementById('add-employee-form');
+                if (formEl) {
+                    formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 50);
+        });
+    });
+
+    // Job title select: reveal custom input when needed
+    const titleSelect = document.getElementById('employee-job-title-select');
+    const titleCustomWrap = document.getElementById('employee-job-title-custom-wrap');
+    const titleCustomInput = document.getElementById('employee-job-title-custom');
+    if (titleSelect && titleCustomWrap) {
+        const updateTitleCustom = () => {
+            const isCustom = titleSelect.value === '__custom__';
+            titleCustomWrap.style.display = isCustom ? '' : 'none';
+            if (isCustom) {
+                titleCustomInput?.focus();
+            }
+        };
+        titleSelect.addEventListener('change', updateTitleCustom);
+        updateTitleCustom();
+    }
+
+    document.getElementById('export-csv').addEventListener('click', () => {
+        alert('CSV export coming soon!');
+    });
+    document.getElementById('export-pdf').addEventListener('click', () => {
+        alert('PDF export coming soon!');
+    });
+
+    // Payroll select all functionality
+    const selectAllCheckbox = document.getElementById('select-all-checkbox');
+    const selectAllEmployees = document.getElementById('select-all-employees');
+    const employeeCheckboxes = document.querySelectorAll('.employee-checkbox');
+    
+    if (selectAllCheckbox && selectAllEmployees && employeeCheckboxes.length) {
+        const updateSelectAll = () => {
+            const allChecked = Array.from(employeeCheckboxes).every(cb => cb.checked);
+            const someChecked = Array.from(employeeCheckboxes).some(cb => cb.checked);
+            selectAllCheckbox.checked = allChecked;
+            selectAllCheckbox.indeterminate = someChecked && !allChecked;
+            if (selectAllEmployees) {
+                selectAllEmployees.checked = allChecked;
+            }
+        };
+        
+        const toggleAll = (checked) => {
+            employeeCheckboxes.forEach(cb => cb.checked = checked);
+            updateSelectAll();
+        };
+        
+        selectAllCheckbox.addEventListener('change', (e) => {
+            toggleAll(e.target.checked);
+        });
+        
+        if (selectAllEmployees) {
+            selectAllEmployees.addEventListener('change', (e) => {
+                toggleAll(e.target.checked);
+            });
+        }
+        
+        employeeCheckboxes.forEach(cb => {
+            cb.addEventListener('change', updateSelectAll);
+        });
+        
+        updateSelectAll();
+    }
+
+    // Schedule management: Enable/disable time inputs based on checkbox state
+    function setupScheduleInputs() {
+        const scheduleForms = document.querySelectorAll('.schedule-form');
+        scheduleForms.forEach(form => {
+            const checkboxes = form.querySelectorAll('input[type="checkbox"][name$="_enabled"]');
+            checkboxes.forEach(checkbox => {
+                const dayKey = checkbox.name.replace('_enabled', '');
+                const startInput = form.querySelector(`input[name="${dayKey}_start"]`);
+                const endInput = form.querySelector(`input[name="${dayKey}_end"]`);
+                
+                function updateInputs() {
+                    const isEnabled = checkbox.checked;
+                    if (startInput) startInput.disabled = !isEnabled;
+                    if (endInput) endInput.disabled = !isEnabled;
+                }
+                
+                checkbox.addEventListener('change', updateInputs);
+                updateInputs(); // Initialize state
+            });
+        });
+    }
+
+    // Setup schedule inputs on page load and when schedule panels are opened
+    setupScheduleInputs();
+    
+    // Re-setup when schedule panels are opened (for dynamically loaded content)
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.schedule-edit-panel summary')) {
+            setTimeout(setupScheduleInputs, 100);
+        }
+    });
+
+    showSection(initialSection);
+});
+</script>
+{% endblock %}

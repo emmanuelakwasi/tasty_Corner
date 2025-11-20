@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TastyCorner - Where Every Bite Tells a Story{% endblock %}</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    {% block navbar %}
+    <nav class="navbar">
+        <div class="navbar-background"></div>
+        <div class="navbar-pattern"></div>
+        <div class="container">
+            <div class="nav-brand">
+                <a href="{{ url_for('index') }}" class="brand-link">
+                    <img src="{{ url_for('static', filename='images/fav.png') }}" alt="TastyCorner Logo" class="brand-icon">
+                    <span class="brand-text">
+                        <span class="brand-main">TastyCorner</span>
+                        <span class="brand-sub">Where Every Bite Tells a Story</span>
+                    </span>
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="{{ url_for('menu') }}" class="nav-link">
+                    <span>Menu</span>
+                </a>
+                {% if session.user_id %}
+                    <a href="{{ url_for('wishlist') }}" class="nav-link nav-badge">
+                        <span>Favorites</span>
+                        {% if session.wishlist and session.wishlist|length > 0 %}
+                        <span class="badge">{{ session.wishlist|length }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="{{ url_for('cart') }}" class="nav-link nav-badge">
+                        <span>Cart</span>
+                        {% if session.cart and session.cart|length > 0 %}
+                        <span class="badge">{{ session.cart|length }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="{{ url_for('orders') }}" class="nav-link">
+                        <span>Orders</span>
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('signin') }}" class="nav-link">
+                        <span>Sign In</span>
+                    </a>
+                    <a href="{{ url_for('signup') }}" class="nav-link nav-link-primary">
+                        <span>Sign Up</span>
+                    </a>
+                {% endif %}
+                <a href="{{ url_for('about') }}" class="nav-link">
+                    <span>About</span>
+                </a>
+                <a href="{{ url_for('contact') }}" class="nav-link">
+                    <span>Contact</span>
+                </a>
+                {% if session.get('is_admin') %}
+                <a href="{{ url_for('admin') }}" class="nav-link">
+                    <span>Admin</span>
+                </a>
+                {% endif %}
+            </div>
+            {% if session.user_id %}
+            <div class="user-profile-menu">
+                <button type="button" class="user-profile-trigger" id="userProfileTrigger" aria-haspopup="true" aria-expanded="false">
+                    <div class="profile-avatar">
+                        {{ session.user_name[0].upper() if session.user_name else 'U' }}
+                    </div>
+                    <span class="profile-name">{{ session.user_name }}</span>
+                    <span class="profile-caret">▼</span>
+                </button>
+                <div class="user-profile-dropdown" id="userProfileDropdown" aria-hidden="true">
+                    <div class="profile-dropdown-header">
+                        <div class="profile-dropdown-avatar">
+                            {{ session.user_name[0].upper() if session.user_name else 'U' }}
+                        </div>
+                        <div class="profile-dropdown-info">
+                            <div class="profile-dropdown-name">{{ session.user_name }}</div>
+                            <div class="profile-dropdown-email">{{ session.get('user_email', 'No email') }}</div>
+                        </div>
+                    </div>
+                    <div class="profile-dropdown-divider"></div>
+                    <a href="{{ url_for('orders') }}" class="profile-dropdown-item">
+                        <span>My Orders</span>
+                    </a>
+                    <a href="{{ url_for('wishlist') }}" class="profile-dropdown-item">
+                        <span>Favorites</span>
+                    </a>
+                    <a href="{{ url_for('cart') }}" class="profile-dropdown-item">
+                        <span>Shopping Cart</span>
+                    </a>
+                    {% if session.get('is_admin') %}
+                    <div class="profile-dropdown-divider"></div>
+                    <a href="{{ url_for('admin') }}" class="profile-dropdown-item">
+                        <span>Admin Dashboard</span>
+                    </a>
+                    {% endif %}
+                    <div class="profile-dropdown-divider"></div>
+                    <a href="{{ url_for('signout') }}" class="profile-dropdown-item profile-dropdown-signout">
+                        <span>Sign Out</span>
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+    {% endblock %}
+
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 TastyCorner. All rights reserved.</p>
+            <p>Made with love for food lovers | Fast & Fresh Delivery | Secure payments accepted</p>
+        </div>
+    </footer>
+
+    <script>
+        // User Profile Dropdown
+        document.addEventListener('DOMContentLoaded', () => {
+            const profileTrigger = document.getElementById('userProfileTrigger');
+            const profileDropdown = document.getElementById('userProfileDropdown');
+            
+            if (profileTrigger && profileDropdown) {
+                const closeDropdown = () => {
+                    profileTrigger.setAttribute('aria-expanded', 'false');
+                    profileDropdown.setAttribute('aria-hidden', 'true');
+                    profileDropdown.classList.remove('open');
+                };
+
+                profileTrigger.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const isOpen = profileDropdown.classList.contains('open');
+                    
+                    if (isOpen) {
+                        closeDropdown();
+                    } else {
+                        profileTrigger.setAttribute('aria-expanded', 'true');
+                        profileDropdown.setAttribute('aria-hidden', 'false');
+                        profileDropdown.classList.add('open');
+                    }
+                });
+
+                profileDropdown.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!profileTrigger.contains(e.target) && !profileDropdown.contains(e.target)) {
+                        closeDropdown();
+                    }
+                });
+
+                window.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        closeDropdown();
+                    }
+                });
+            }
+        });
+    </script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>
+

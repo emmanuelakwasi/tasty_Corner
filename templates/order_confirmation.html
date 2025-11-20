@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Order Confirmation - TastyCorner{% endblock %}
+
+{% block content %}
+<div class="container">
+<div class="confirmation-container">
+    <div class="confirmation-card">
+        <div class="confirmation-icon">✅</div>
+        <h1>Order Confirmed!</h1>
+        <p class="confirmation-subtitle">Thank you for your order, {{ user_name }}!</p>
+        
+        <div class="order-details">
+            <h2>Order #{{ order.order_id }}</h2>
+            
+            <div class="order-items-section">
+                <h3>Items Ordered</h3>
+                {% for item in order['items'] %}
+                <div class="order-item">
+                    <span>{{ item.name }} x{{ item.quantity }}</span>
+                    <span>${{ "%.2f"|format(item.price * item.quantity) }}</span>
+                </div>
+                {% if item.allergies %}
+                <p class="allergy-note">⚠️ Allergies: {{ item.allergies }}</p>
+                {% endif %}
+                {% endfor %}
+            </div>
+            
+            {% if order['allergies'] %}
+            <div class="allergies-section">
+                <h3>Allergy Notes</h3>
+                <ul>
+                    {% for allergy in order['allergies'] %}
+                    <li>{{ allergy }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            <div class="order-summary">
+                <div class="summary-row">
+                    <span>Subtotal:</span>
+                    <span>${{ "%.2f"|format(order.subtotal|float) }}</span>
+                </div>
+                {% if order.get('coupon_code') and order.get('discount') and order.discount|float > 0 %}
+                <div class="summary-row" style="color: #10b981;">
+                    <span>🎟️ Discount ({{ order.coupon_code }}):</span>
+                    <span>-${{ "%.2f"|format(order.discount|float) }}</span>
+                </div>
+                {% endif %}
+                <div class="summary-row">
+                    <span>Tax:</span>
+                    <span>${{ "%.2f"|format(order.tax|float) }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Delivery Fee:</span>
+                    <span>${{ "%.2f"|format(order.delivery_fee|float) }}</span>
+                </div>
+                {% if order.tip|float > 0 %}
+                <div class="summary-row">
+                    <span>Tip:</span>
+                    <span>${{ "%.2f"|format(order.tip|float) }}</span>
+                </div>
+                {% endif %}
+                <div class="summary-row total-row">
+                    <span><strong>Total:</strong></span>
+                    <span><strong>${{ "%.2f"|format(order.total|float) }}</strong></span>
+                </div>
+            </div>
+            
+            <div class="order-status">
+                <p><strong>Status:</strong> {{ order.status|title }}</p>
+                <p><strong>Order Date:</strong> {{ order.created_at }}</p>
+            </div>
+        </div>
+        
+        <div class="confirmation-actions">
+            <a href="{{ url_for('menu') }}" class="btn btn-primary">Order More</a>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Home</a>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+

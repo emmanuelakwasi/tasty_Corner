@@ -1,0 +1,68 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Admin Login - TastyCorner{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper signin-wrapper admin-login">
+    <div class="auth-hero admin-auth-hero">
+        <div class="admin-hero-background"></div>
+        <div class="admin-hero-pattern"></div>
+        <div class="auth-hero-content">
+            <div class="auth-hero-top">
+                <span class="auth-badge admin-badge">Admin Access</span>
+                <h1>Welcome, Administrator</h1>
+                <p>Manage the entire TastyCorner experience—update menus, monitor orders, and keep operations running smoothly. Where every bite tells a story!</p>
+            </div>
+            <div class="auth-highlights admin-highlights">
+                <div class="highlight-card admin-highlight-card">
+                    <div class="highlight-icon-wrapper">
+                        <span class="material-symbols-outlined highlight-icon">restaurant_menu</span>
+                    </div>
+                    <p>Control every menu item</p>
+                </div>
+                <div class="highlight-card admin-highlight-card">
+                    <div class="highlight-icon-wrapper">
+                        <span class="material-symbols-outlined highlight-icon">analytics</span>
+                    </div>
+                    <p>Monitor orders in real time</p>
+                </div>
+                <div class="highlight-card admin-highlight-card">
+                    <div class="highlight-icon-wrapper">
+                        <span class="material-symbols-outlined highlight-icon">settings</span>
+                    </div>
+                    <p>Configure site-wide settings</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="auth-card admin-auth-card">
+        <div class="auth-card-header">
+            <div class="admin-logo-wrapper">
+                <img src="{{ url_for('static', filename='images/fav.png') }}" alt="TastyCorner" class="admin-login-logo">
+            </div>
+            <h2>Admin Sign In</h2>
+            <p class="auth-subtitle">Authorized personnel only</p>
+        </div>
+        <form method="POST" class="auth-form">
+            <div class="form-group">
+                <label for="admin-email">Admin Email</label>
+                <div class="input-wrapper">
+                    <span class="input-icon material-symbols-outlined">email</span>
+                    <input type="email" id="admin-email" name="email" placeholder="admin@example.com" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="admin-password">Password</label>
+                <div class="input-wrapper">
+                    <span class="input-icon material-symbols-outlined">lock</span>
+                    <input type="password" id="admin-password" name="password" placeholder="Admin password" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block btn-large admin-login-btn">
+                <span>Access Dashboard</span>
+                <span class="material-symbols-outlined">arrow_forward</span>
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

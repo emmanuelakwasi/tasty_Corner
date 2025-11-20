@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Menu - TastyCorner{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="menu-header">
+        <h1>Our Menu</h1>
+        <p>Delicious American cuisine, made fresh daily</p>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="menu-controls">
+        <div class="menu-search">
+            <form method="GET" action="{{ url_for('menu') }}" class="search-form">
+                <input type="text" name="search" placeholder="Search menu items..." value="{{ search_query }}" class="search-input">
+                {% if category_filter %}
+                <input type="hidden" name="category" value="{{ category_filter }}">
+                {% endif %}
+                <button type="submit" class="search-button">Search</button>
+                {% if search_query %}
+                <a href="{{ url_for('menu', category=category_filter) if category_filter else url_for('menu') }}" class="clear-search">✕</a>
+                {% endif %}
+            </form>
+        </div>
+        <div class="category-filters">
+            <a href="{{ url_for('menu', search=search_query) if search_query else url_for('menu') }}" 
+               class="filter-btn {{ 'active' if not category_filter else '' }}">
+                All
+            </a>
+            {% for cat in all_categories %}
+            <a href="{{ url_for('menu', category=cat, search=search_query) if search_query else url_for('menu', category=cat) }}" 
+               class="filter-btn {{ 'active' if category_filter == cat else '' }}">
+                {{ cat }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if search_query and not categories %}
+    <div class="no-results">
+        <p>No items found for "{{ search_query }}"</p>
+        <a href="{{ url_for('menu') }}" class="btn btn-primary">View All Menu Items</a>
+    </div>
+    {% elif not categories %}
+    <div class="no-results">
+        <p>No items in this category</p>
+    </div>
+    {% endif %}
+
+{% for category, items in categories.items() %}
+<div class="menu-section">
+    <h2 class="category-title">{{ category }}</h2>
+    <div class="menu-grid">
+        {% for item in items %}
+        <div class="menu-item-card">
+            <div class="menu-item-image">
+                {% if item.image %}
+                <img src="{{ url_for('static', filename='images/' + item.image) }}" 
+                     alt="{{ item.name }}"
+                     loading="lazy"
+                     decoding="async"
+                     onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="image-placeholder" style="display:none;">
+                    <span>🍽️</span>
+                    <p>Image Coming Soon</p>
+                </div>
+                {% else %}
+                <div class="image-placeholder">
+                    <span>🍽️</span>
+                    <p>Image Coming Soon</p>
+                </div>
+                {% endif %}
+            </div>
+            <div class="menu-item-content">
+                <h3>{{ item.name }}</h3>
+                <p class="menu-item-description">{{ item.description }}</p>
+                <div class="menu-item-footer">
+                    <span class="menu-item-price">${{ "%.2f"|format(item.price) }}</span>
+                    <div class="menu-item-actions">
+                        <form method="POST" action="{{ url_for('wishlist') }}" class="wishlist-form">
+                            <input type="hidden" name="item_id" value="{{ item.item_id }}">
+                            <button type="submit" class="btn-wishlist" title="Add to Favorites">
+                                {% if item.item_id in wishlist_ids %}
+                                    <span class="favorite-icon filled">★</span>
+                                {% else %}
+                                    <span class="favorite-icon">☆</span>
+                                {% endif %}
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ url_for('cart') }}" class="add-to-cart-form">
+                            <input type="hidden" name="item_id" value="{{ item.item_id }}">
+                            <div class="form-row">
+                                <input type="number" name="quantity" value="1" min="1" class="quantity-input">
+                                <input type="text" name="allergies" placeholder="Allergies (optional)" class="allergy-input">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm">Add to Cart</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endfor %}
+
+{% if session.cart and session.cart|length > 0 %}
+<div class="cart-fab">
+    <a href="{{ url_for('cart') }}" class="btn btn-primary">
+        View Cart ({{ session.cart|length }})
+    </a>
+</div>
+{% endif %}
+</div>
+{% endblock %}
+

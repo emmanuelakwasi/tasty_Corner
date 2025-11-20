@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin - TastyCorner{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="admin-body">
+    <nav class="admin-navbar">
+        <div class="admin-navbar-inner">
+            <a href="{{ url_for('admin') }}" class="admin-brand">
+                <img src="{{ url_for('static', filename='images/fav.png') }}" alt="TastyCorner Logo" class="admin-brand-icon">
+                <span class="admin-brand-text">TastyCorner Admin</span>
+            </a>
+            <div class="admin-nav-links">
+                <a href="{{ url_for('admin') }}" class="admin-nav-link">Dashboard</a>
+                <a href="{{ url_for('menu') }}" class="admin-nav-link">View Site</a>
+                {% if session.get('is_admin') %}
+                <a href="{{ url_for('admin_logout') }}" class="admin-nav-link admin-nav-link-outline">Logout</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <main class="admin-main">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout - TastyCorner{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="checkout-header">
+        <div class="checkout-header-icon">🛒</div>
+        <h1>Almost There!</h1>
+        <p class="checkout-subtitle">Review your order and complete your purchase</p>
+        <div class="checkout-progress">
+            <div class="progress-step completed">
+                <div class="progress-dot">✓</div>
+                <span>Cart</span>
+            </div>
+            <div class="progress-line completed"></div>
+            <div class="progress-step active">
+                <div class="progress-dot">2</div>
+                <span>Checkout</span>
+            </div>
+            <div class="progress-line"></div>
+            <div class="progress-step">
+                <div class="progress-dot">3</div>
+                <span>Confirmation</span>
+            </div>
+        </div>
+    </div>
+
+<div class="checkout-container">
+    <div class="checkout-items">
+        <div class="checkout-items-header">
+            <h2>📦 Your Order</h2>
+            <span class="item-count">{{ cart|length }} item{{ 's' if cart|length != 1 else '' }}</span>
+        </div>
+        <div class="checkout-items-list">
+            {% for item in cart %}
+            <div class="checkout-item" style="animation-delay: {{ loop.index0 * 0.1 }}s">
+                <div class="checkout-item-icon">🍽️</div>
+                <div class="checkout-item-details">
+                    <h4>{{ item.name }}</h4>
+                    <p class="checkout-item-quantity">Quantity: {{ item.quantity }}</p>
+                    {% if item.allergies %}
+                    <p class="allergy-note">⚠️ Allergies: {{ item.allergies }}</p>
+                    {% endif %}
+                </div>
+                <div class="checkout-item-price">${{ "%.2f"|format(item.price * item.quantity) }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="checkout-form-container">
+        <form method="POST" class="checkout-form">
+            <div class="checkout-form-header">
+                <h2>💰 Order Summary</h2>
+            </div>
+            
+            <div class="summary-section">
+                <div class="summary-row">
+                    <span class="summary-label">💵 Subtotal:</span>
+                    <span class="summary-value">${{ "%.2f"|format(subtotal) }}</span>
+                </div>
+                {% if discount and discount > 0 %}
+                <div class="summary-row" style="color: #10b981;">
+                    <span class="summary-label">🎟️ Discount ({{ applied_coupon }}):</span>
+                    <span class="summary-value">-${{ "%.2f"|format(discount) }}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">💵 Subtotal After Discount:</span>
+                    <span class="summary-value">${{ "%.2f"|format(subtotal - discount) }}</span>
+                </div>
+                {% endif %}
+                <div class="summary-row">
+                    <span class="summary-label">📊 Tax ({{ "%.2f"|format(tax_rate) }}%):</span>
+                    <span class="summary-value">${{ "%.2f"|format(tax) }}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">🚚 Delivery Fee:</span>
+                    <span class="summary-value">${{ "%.2f"|format(delivery_fee) }}</span>
+                </div>
+            </div>
+            
+            <div class="coupon-section" style="margin: 20px 0; padding: 15px; background: #f9fafb; border-radius: 8px;">
+                <div class="coupon-header" style="margin-bottom: 10px;">
+                    <h3 style="font-size: 16px; margin: 0;">🎟️ Have a Coupon Code?</h3>
+                </div>
+                <form method="POST" action="{{ url_for('apply_coupon_checkout') }}" style="display: flex; gap: 10px; align-items: center;">
+                    <input type="text" name="coupon_code" placeholder="Enter coupon code" value="{{ applied_coupon }}" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" maxlength="20">
+                    {% if applied_coupon %}
+                    <button type="submit" name="remove" value="true" class="btn btn-secondary btn-sm">Remove</button>
+                    {% else %}
+                    <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+                    {% endif %}
+                </form>
+                {% if applied_coupon and discount > 0 %}
+                <p style="margin: 10px 0 0 0; color: #10b981; font-size: 14px;">✓ Coupon applied! You saved ${{ "%.2f"|format(discount) }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="tip-section">
+                <div class="tip-section-header">
+                    <h3>💝 Show Your Appreciation</h3>
+                    <p class="tip-subtitle">Tips help our team provide excellent service</p>
+                </div>
+                <div class="tip-options">
+                    <label class="tip-option">
+                        <input type="radio" name="tip_percentage" value="2%" checked>
+                        <span class="tip-emoji">😊</span>
+                        <span class="tip-text">2% (${{ "%.2f"|format(subtotal * 0.02) }})</span>
+                    </label>
+                    <label class="tip-option">
+                        <input type="radio" name="tip_percentage" value="5%">
+                        <span class="tip-emoji">🙂</span>
+                        <span class="tip-text">5% (${{ "%.2f"|format(subtotal * 0.05) }})</span>
+                    </label>
+                    <label class="tip-option">
+                        <input type="radio" name="tip_percentage" value="10%">
+                        <span class="tip-emoji">😄</span>
+                        <span class="tip-text">10% (${{ "%.2f"|format(subtotal * 0.10) }})</span>
+                    </label>
+                    <label class="tip-option">
+                        <input type="radio" name="tip_percentage" value="20%">
+                        <span class="tip-emoji">🤩</span>
+                        <span class="tip-text">20% (${{ "%.2f"|format(subtotal * 0.20) }})</span>
+                    </label>
+                    <label class="tip-option">
+                        <input type="radio" name="tip_percentage" value="custom" id="custom-tip-radio">
+                        <span class="tip-emoji">✏️</span>
+                        <span class="tip-text">Custom: $<input type="number" name="custom_tip" step="0.01" min="0" placeholder="0.00" class="custom-tip-input" id="custom-tip-input" disabled></span>
+                    </label>
+                    <label class="tip-option">
+                        <input type="radio" name="tip_percentage" value="no_tip">
+                        <span class="tip-emoji">💭</span>
+                        <span class="tip-text">No Tip</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="total-section">
+                <div class="total-row">
+                    <span class="total-label"><strong>🎉 Total:</strong></span>
+                    <span id="total-amount" class="total-amount"><strong>${{ "%.2f"|format((subtotal - (discount or 0)) + tax + delivery_fee + subtotal * 0.02) }}</strong></span>
+                </div>
+            </div>
+            
+            <input type="hidden" name="coupon_code" value="{{ applied_coupon }}">
+            
+            <div class="payment-section">
+                <div class="payment-header">
+                    <h3>💳 Payment</h3>
+                </div>
+                <div class="payment-note">
+                    <div class="payment-icon">🔒</div>
+                    <div class="payment-text">
+                        <strong>Secure Checkout</strong>
+                        <p>Stripe integration coming soon. Your order will be saved securely.</p>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block btn-large checkout-button">
+                    <span class="button-icon">✨</span>
+                    <span>Place Order Now</span>
+                    <span class="button-arrow">→</span>
+                </button>
+                <p class="secure-note">🔐 Your information is safe and secure</p>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tipInputs = document.querySelectorAll('input[name="tip_percentage"]');
+    const customTipInput = document.querySelector('input[name="custom_tip"]');
+    const totalAmount = document.getElementById('total-amount');
+    
+    const subtotal = {{ subtotal }};
+    const discount = {{ discount or 0 }};
+    const tax = {{ tax }};
+    const deliveryFee = {{ delivery_fee }};
+    
+    function updateTotal() {
+        let tip = 0;
+        const selectedTip = document.querySelector('input[name="tip_percentage"]:checked').value;
+        
+        if (selectedTip === 'custom') {
+            tip = parseFloat(customTipInput.value) || 0;
+        } else if (selectedTip !== 'no_tip') {
+            const tipPercent = parseFloat(selectedTip.replace('%', '')) / 100;
+            tip = subtotal * tipPercent;
+        }
+        
+        const subtotalAfterDiscount = Math.max(0, subtotal - discount);
+        const taxAfterDiscount = subtotalAfterDiscount * ({{ tax_rate }} / 100);
+        const total = subtotalAfterDiscount + taxAfterDiscount + deliveryFee + tip;
+        
+        // Add animation effect
+        totalAmount.style.animation = 'none';
+        setTimeout(() => {
+            totalAmount.style.animation = 'countUp 0.5s ease-out';
+            totalAmount.innerHTML = '<strong>$' + total.toFixed(2) + '</strong>';
+        }, 10);
+    }
+    
+    // Add event listeners for tip options
+    tipInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            // Enable/disable custom tip input based on selection
+            if (customTipInput) {
+                if (this.value === 'custom') {
+                    customTipInput.disabled = false;
+                    customTipInput.focus();
+                } else {
+                    customTipInput.disabled = true;
+                    customTipInput.value = '';
+                }
+            }
+            updateTotal();
+        });
+    });
+    
+    // Update total when custom tip amount changes
+    if (customTipInput) {
+        customTipInput.addEventListener('input', updateTotal);
+    }
+    
+    // Initialize total on page load
+    updateTotal();
+});
+</script>
+</div>
+{% endblock %}
+
