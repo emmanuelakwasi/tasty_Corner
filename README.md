@@ -1,4 +1,4 @@
-# Louisiana Restaurant Website
+# Tasty Corner Restaurant. 
 
 A Flask-based restaurant website with user authentication, menu ordering, allergy tracking, tip selection, and order management.
 
@@ -93,5 +93,5 @@ Place your menu item images in `static/images/` directory. The images will be au
 
 ## License
 
-This project is for educational purposes.
+Educational purposes.
 
