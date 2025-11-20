@@ -272,23 +272,15 @@
                             ('saturday', 'Saturday'),
                             ('sunday', 'Sunday')
                         ] %}
-                        {% if employee.schedule is defined %}
-                            {% set schedule = employee.schedule %}
-                        {% else %}
-                            {% set schedule = {} %}
-                        {% endif %}
+                        {% set schedule = employee.get('schedule') or {} %}
                         {% for day_key, day_name in days %}
-                            {% if schedule and day_key in schedule %}
-                                {% set day_schedule = schedule[day_key] %}
-                            {% else %}
-                                {% set day_schedule = {} %}
-                            {% endif %}
-                            {% set is_enabled = (day_schedule.enabled == True or day_schedule.enabled == 'true' or day_schedule.enabled == 1) if day_schedule and day_schedule.enabled is defined else False %}
-                            <div class="calendar-week-row {% if day_key == today_weekday %}today-row{% endif %}">
+                            {% set day_schedule = schedule.get(day_key, {}) %}
+                            {% set is_enabled = day_schedule.get('enabled') == True or day_schedule.get('enabled') == 'true' or day_schedule.get('enabled') == 1 %}
+                            <div class="calendar-week-row {% if day_key == datetime.now().strftime('%A').lower() %}today-row{% endif %}">
                                 <div class="calendar-day-name">{{ day_name }}</div>
                                 <div class="calendar-day-time">
                                     {% if is_enabled %}
-                                        <span class="schedule-time-badge">{{ (day_schedule.start if day_schedule and day_schedule.start is defined else '09:00') }} - {{ (day_schedule.end if day_schedule and day_schedule.end is defined else '17:00') }}</span>
+                                        <span class="schedule-time-badge">{{ day_schedule.get('start', '09:00') }} - {{ day_schedule.get('end', '17:00') }}</span>
                                     {% else %}
                                         <span class="schedule-off-badge">Off</span>
                                     {% endif %}
@@ -301,7 +293,7 @@
                                     {% endif %}
                                 </div>
                             </div>
-                            {% endfor %}
+                        {% endfor %}
                     </div>
 
                     <!-- Monthly Calendar View -->
@@ -310,7 +302,7 @@
                             <button class="calendar-nav-btn" id="prevMonth">
                                 <span class="material-symbols-outlined">chevron_left</span>
                             </button>
-                            <h3 id="currentMonthYear">{% if now %}{{ now.strftime('%B %Y') }}{% else %}Loading...{% endif %}</h3>
+                            <h3 id="currentMonthYear">{{ datetime.now().strftime('%B %Y') }}</h3>
                             <button class="calendar-nav-btn" id="nextMonth">
                                 <span class="material-symbols-outlined">chevron_right</span>
                             </button>
@@ -515,17 +507,8 @@
 {% block extra_scripts %}
 <script>
     // Schedule data for calendar
-    {% if employee.schedule is defined %}
-        {% set emp_schedule = employee.schedule %}
-    {% else %}
-        {% set emp_schedule = {} %}
-    {% endif %}
-    const scheduleData = {{ emp_schedule|tojson }};
-    {% if now %}
-    const currentDate = new Date('{{ now.strftime("%Y-%m-%d") }}');
-    {% else %}
-    const currentDate = new Date();
-    {% endif %}
+    const scheduleData = {{ (employee.get('schedule') or {})|tojson }};
+    const currentDate = new Date('{{ datetime.now().strftime("%Y-%m-%d") }}');
     
     // Section navigation
     (function() {
@@ -608,21 +591,21 @@
     })();
 
     // Monthly Calendar Generation
-    let currentCalendarMonth = new Date().getMonth();
-    let currentCalendarYear = new Date().getFullYear();
-    
     function initMonthlyCalendar() {
         const monthGrid = document.getElementById('monthGrid');
         if (!monthGrid) return;
         
-        const firstDay = new Date(currentCalendarYear, currentCalendarMonth, 1);
-        const lastDay = new Date(currentCalendarYear, currentCalendarMonth + 1, 0);
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
         const daysInMonth = lastDay.getDate();
         const startingDayOfWeek = firstDay.getDay();
         
         const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const fullDayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-        const today = new Date();
         
         let html = '<div class="calendar-weekdays">';
         dayNames.forEach(day => {
@@ -639,11 +622,11 @@
         
         // Days of the month
         for (let day = 1; day <= daysInMonth; day++) {
-            const date = new Date(currentCalendarYear, currentCalendarMonth, day);
+            const date = new Date(year, month, day);
             const dayOfWeek = fullDayNames[date.getDay()];
             const daySchedule = scheduleData[dayOfWeek] || {};
             const isEnabled = daySchedule.enabled === true || daySchedule.enabled === 'true' || daySchedule.enabled === 1;
-            const isToday = day === today.getDate() && currentCalendarMonth === today.getMonth() && currentCalendarYear === today.getFullYear();
+            const isToday = day === now.getDate() && month === now.getMonth() && year === now.getFullYear();
             
             html += `<div class="calendar-day ${isToday ? 'today' : ''} ${isEnabled ? 'scheduled' : 'not-scheduled'}">`;
             html += `<div class="calendar-day-number">${day}</div>`;
@@ -661,28 +644,19 @@
         // Update month/year display
         const monthYearEl = document.getElementById('currentMonthYear');
         if (monthYearEl) {
-            const monthDate = new Date(currentCalendarYear, currentCalendarMonth, 1);
-            monthYearEl.textContent = monthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            monthYearEl.textContent = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
         }
     }
 
     // Month navigation
     document.getElementById('prevMonth')?.addEventListener('click', function() {
-        currentCalendarMonth--;
-        if (currentCalendarMonth < 0) {
-            currentCalendarMonth = 11;
-            currentCalendarYear--;
-        }
-        initMonthlyCalendar();
+        // TODO: Implement month navigation
+        console.log('Previous month');
     });
 
     document.getElementById('nextMonth')?.addEventListener('click', function() {
-        currentCalendarMonth++;
-        if (currentCalendarMonth > 11) {
-            currentCalendarMonth = 0;
-            currentCalendarYear++;
-        }
-        initMonthlyCalendar();
+        // TODO: Implement month navigation
+        console.log('Next month');
     });
 
     // Live Time Clock
@@ -774,7 +748,7 @@
     // Check-in time validation
     document.getElementById('checkinBtn')?.addEventListener('click', function(e) {
         {% if has_schedule_today %}
-        const todaySchedule = scheduleData['{{ today_weekday }}'] || {};
+        const todaySchedule = scheduleData['{{ datetime.now().strftime("%A").lower() }}'] || {};
         if (todaySchedule.enabled) {
             const now = new Date();
             const currentTime = now.getHours() * 60 + now.getMinutes(); // minutes since midnight

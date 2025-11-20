@@ -2515,17 +2515,48 @@ def worker_dashboard():
     today_weekday = datetime.now().strftime('%A').lower()
     now = datetime.now()
     
-    return render_template('worker/dashboard.html', 
-                         employee=employee, 
-                         attendance=attendance,
-                         has_schedule_today=has_schedule_today,
-                         payroll_info=payroll_info,
-                         hourly_rate=hourly_rate,
-                         hours_today=hours_today,
-                         hours_week=hours_week,
-                         overtime_status=overtime_status,
-                         today_weekday=today_weekday,
-                         now=now)
+    # Ensure all variables have safe defaults
+    if not payroll_info:
+        payroll_info = {'hours_this_period': 0, 'last_paid_date': None}
+    if not overtime_status:
+        overtime_status = {
+            'hours_today': 0,
+            'hours_week': 0,
+            'is_overtime_today': False,
+            'is_overtime_week': False,
+            'overtime_today': 0.0,
+            'overtime_week': 0.0
+        }
+    if hours_today is None:
+        hours_today = 0.0
+    if hours_week is None:
+        hours_week = 0.0
+    if hourly_rate is None:
+        hourly_rate = 15.0
+    
+    # Ensure employee has schedule
+    if 'schedule' not in employee or not employee['schedule']:
+        employee['schedule'] = get_default_schedule()
+    
+    try:
+        return render_template('worker/dashboard.html', 
+                             employee=employee, 
+                             attendance=attendance,
+                             has_schedule_today=has_schedule_today,
+                             payroll_info=payroll_info,
+                             hourly_rate=hourly_rate,
+                             hours_today=hours_today,
+                             hours_week=hours_week,
+                             overtime_status=overtime_status,
+                             today_weekday=today_weekday,
+                             now=now)
+    except Exception as e:
+        # Log the error for debugging
+        import traceback
+        print(f"Error rendering worker dashboard: {e}")
+        print(traceback.format_exc())
+        flash(f'An error occurred while loading the dashboard: {str(e)}', 'error')
+        return redirect(url_for('worker_login'))
 
 @app.route('/worker/checkin', methods=['POST'])
 def worker_checkin():
