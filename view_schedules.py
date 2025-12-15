@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Script to view employee schedules in the SQLite database
 """
@@ -6,7 +5,6 @@ import sqlite3
 import json
 import os
 
-# Database path
 DB_PATH = os.path.join('data', 'employees.db')
 
 def view_schedules():
@@ -19,7 +17,7 @@ def view_schedules():
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     
-    # Check if schedule column exists
+   
     cursor.execute("PRAGMA table_info(employees)")
     columns = [row[1] for row in cursor.fetchall()]
     
@@ -28,7 +26,7 @@ def view_schedules():
         conn.close()
         return
     
-    # Get all employees with their schedules
+    
     cursor.execute("""
         SELECT employee_id, first_name, last_name, email, schedule 
         FROM employees 
